@@ -1,0 +1,131 @@
+.user_image {
+    width: 100%;
+    max-width: 150px;
+    height: auto;
+    max-height: 150px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: auto;
+    padding-top: 5%;
+    position: relative;
+}
+
+.icons_class {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    font-size: 20px;
+}
+
+.stage-scroll-container {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 10px 0;
+    gap: 20px;
+    scroll-behavior: smooth;
+}
+
+/* style.css */
+
+/* Container for stages with horizontal scroll */
+.stage-scroll-container {
+    overflow-x: auto;
+    padding-bottom: 1rem;
+}
+
+/* Wrapper to hold all stages in a row */
+.stages-wrapper {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 1rem;
+}
+
+/* Each stage column */
+.stage-column {
+    flex: 0 0 300px;
+    /* Fixed width for each stage column */
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Stage card styling */
+.stage-card {
+    background-color: #f0f2f5;
+    border-radius: 8px;
+    padding: 1rem;
+    height: 100%;
+    overflow-y: auto;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Stage title styling */
+.stage-title {
+    margin-bottom: 1rem;
+    font-weight: bold;
+    color: #1890ff;
+}
+
+/* Container for leads within a stage */
+.leads-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Lead card styling */
+.lead-card {
+    background-color: #ffffff;
+    border: 1px solid #d9d9d9;
+    border-radius: 8px;
+    padding: 30px 5px;
+    transition: box-shadow 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.lead-card:hover {
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    transition: box-shadow 0.2s ease-in-out;
+}
+
+/* Lead actions button group */
+.lead-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Scrollbar styling for stages */
+.stage-scroll-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.stage-scroll-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.stage-scroll-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.stage-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .stage-column {
+        flex: 0 0 250px;
+    }
+}
+
+@media (max-width: 576px) {
+    .stage-column {
+        flex: 0 0 200px;
+    }
+}
