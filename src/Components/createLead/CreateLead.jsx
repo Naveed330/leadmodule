@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import axios from 'axios';
 import './CreateLead.css';
 
-const CreateLead = ({ modal2Open, setModal2Open }) => {
+const CreateLead = ({ modal2Open, setModal2Open, fetchLeadsData }) => {
     // Redux Data
     const branchesSlice = useSelector(state => state.loginSlice.branches);
     const productNamesSlice = useSelector(state => state.loginSlice.productNames);
@@ -24,7 +24,7 @@ const CreateLead = ({ modal2Open, setModal2Open }) => {
         clientPhone: '',
         clientName: '',
         clientEmail: '',
-        products: productUserSlice || null, // Default to productUserSlice if available
+        products: productUserSlice || null,
         product_stage: '',
         lead_type: '',
         pipeline: pipelineUserSlice?.[0] || pipelineUserSlice, // Set default to first item if available
@@ -100,6 +100,7 @@ const CreateLead = ({ modal2Open, setModal2Open }) => {
                 }
             });
             console.log('Form data submitted:', formData);
+            fetchLeadsData()
             setModal2Open(false);
         } catch (error) {
             console.log(error, 'Failed to submit form');

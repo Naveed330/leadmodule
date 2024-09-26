@@ -370,6 +370,7 @@ const Leads = () => {
                 <CreateLead
                     setModal2Open={setModal2Open}
                     modal2Open={modal2Open}
+                    fetchLeadsData={fetchLeadsData}
                 />
                 <EditLead
                     modalShow={modalShow}
