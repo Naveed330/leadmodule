@@ -1,47 +1,139 @@
-import React from 'react'
-import './Navbar.css'
-import joveraLogo from '../../Assets/JoveraLogoweb.png'
-import { Navbar, Container, Button } from 'react-bootstrap'
-import { useDispatch } from 'react-redux'
-import { useNavigate, Link } from 'react-router-dom'
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import io from 'socket.io-client';
 import { logout } from '../../Redux/loginSlice';
-const Navbars = () => {
-    const navigate = useNavigate()
-    const dispatch = useDispatch()
+import { Button, Modal } from 'react-bootstrap'; // Import Bootstrap components
+
+const Navbar = () => {
+    const userID = useSelector(state => state.loginSlice.user?._id);
+    const dispatch = useDispatch();
+    const [notifications, setNotifications] = useState([]);
+    const [socket, setSocket] = useState(null);
+    const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (userID) {
+            const newSocket = io('http://192.168.2.137:2000', {
+                query: { userId: userID },
+                transports: ['websocket'],
+            });
+            setSocket(newSocket);
+
+            newSocket.on('notification', (data) => {
+                setNotifications(prevNotifications => [
+                    ...prevNotifications,
+                    { ...data, read: false }
+                ]);
+            });
+
+            return () => {
+                newSocket.disconnect();
+            };
+        }
+    }, [userID]);
+
+    const handleShowNotifications = () => {
+        setShowNotificationsModal(true);
+    };
+
+    const closeNotificationsModal = () => {
+        setShowNotificationsModal(false);
+    };
+
+    const markAsRead = async (notificationId) => {
+        try {
+            const response = await fetch(`http://192.168.2.137:2000/api/notifications/mark-as-read/${notificationId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                setNotifications(prevNotifications =>
+                    prevNotifications.map(notification =>
+                        notification.notificationId === notificationId
+                            ? { ...notification, read: true }
+                            : notification
+                    )
+                );
+            } else {
+                console.error('Failed to mark notification as read');
+            }
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+        }
+    };
 
     const logoutHandler = () => {
         localStorage.removeItem('token');
         dispatch(logout());
         navigate('/');
-    }
-
-    const joveraimagelogo = () => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
     };
+
+    const unreadNotifications = notifications.filter(notification => !notification.read);
+
     return (
-        <div>
-            <Navbar expand="lg" className="navbar_container" >
-                <Container fluid style={{ padding: '0px 50px' }}>
-                    <img src={joveraLogo} alt="joveraLogo" style={{ width: '60px', height: '60px', cursor: 'pointer' }} onClick={joveraimagelogo} />
+        <>
+            <nav className='sticky-top navbar_container' style={{ backgroundColor: '#ffffff' }} >
+                <h1>CRM</h1>
+                <div>
+                    <Button onClick={handleShowNotifications} variant="primary">
+                        Notifications ({unreadNotifications.length})
+                    </Button>
+                    <Button onClick={logoutHandler} variant="danger" style={{ marginLeft: '10px' }}>
+                        Logout
+                    </Button>
+                </div>
+            </nav>
 
-                    <div style={{ display: 'flex', gap: '20px' }} >
-                        <Link to={''} className='navbarLinks' >Business Loan</Link>
-                        <Link to={''} className='navbarLinks' >Personal Loan</Link>
-                        <Link to={''} className='navbarLinks'>Mortgage Loan</Link>
-                        <Link to={''} className='navbarLinks'>Real Estate</Link>
-                    </div>
+            <Modal show={showNotificationsModal} onHide={closeNotificationsModal}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Notifications</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {notifications.length === 0 ? (
+                        <p>No Notifications Available.</p>
+                    ) : (
+                        notifications.map(notification => (
+                            <div key={notification.notificationId} style={{ marginBottom: '10px', borderBottom: '1px solid #ccc', paddingBottom: '10px' }}>
+                                <p>{notification.message}</p>
+                                <Link to={`/single-leads/${notification.leadId}`} >
+                                    <p>Lead ID: {notification.leadId}</p>
+                                </Link>
+                                {!notification.read && (
+                                    <Button
+                                        onClick={() => markAsRead(notification.notificationId)}
+                                        variant="success"
+                                        style={{ marginTop: '10px' }}
+                                    >
+                                        Mark as Read
+                                    </Button>
+                                )}
+                            </div>
+                        ))
+                    )}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={closeNotificationsModal}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
 
-                    <div>
-                        <Button className='logout_btn' onClick={logoutHandler} style={{ cursor: 'pointer' }}>  Logout</Button>
-                    </div>
+            <style jsx>{`
+                nav {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 10px;
+                    background-color: #f8f9fa;
+                }
+            `}</style>
+        </>
+    );
+};
 
-                </Container>
-            </Navbar>
-        </div>
-    )
-}
-
-export default Navbars
+export default Navbar;

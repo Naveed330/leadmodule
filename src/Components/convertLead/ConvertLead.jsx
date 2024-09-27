@@ -422,23 +422,78 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
         agentCommissionPercentage
     ]);
 
-    // onChange Function for Dropdown
+    // onChange Function for HOD
     const HandlerChange = (selectedOption) => {
         if (selectedOption) {
             setSelectedHod(selectedOption);
-            setSelectedManager(selectedOption)
-            setSelectedCoordinator(selectedOption)
-            setSelectedTeamLeader(selectedOption)
-            setSelectedTeamLeaderOne(selectedOption)
-            setSelectedSalesAgent(selectedOption)
-            setSelectedSalesAgentOne(selectedOption)
-            setSelectedMarketingManager(selectedOption)
-            setSelectedMarketingAgent(selectedOption)
-            setSelectedTeleSalesMaangers(selectedOption)
-            setSelectedTeleSalesTeamLeader(selectedOption)
-            setSelectedTeleSalesAgent(selectedOption)
         }
     };
+    // onChange Function for Manager
+    const handleManagerChange = (selectedManagerOption) => {
+        if (selectedManagerOption) {
+            setSelectedManager(selectedManagerOption)
+        }
+    }
+    // onChange Function for Coordinator
+    const handleCoordinatorChange = (selectedCoordinatorOption) => {
+        if (selectedCoordinatorOption) {
+            setSelectedCoordinator(selectedCoordinatorOption)
+        }
+    }
+    // onChange Function for Team Leader
+    const handleTeamLeaderChange = (selectedTeamLeaderOption) => {
+        if (selectedTeamLeaderOption) {
+            setSelectedTeamLeader(selectedTeamLeaderOption)
+        }
+    }
+    // onChange Function for Team Leader One
+    const handleTeamLeaderOneChange = (selectedTeamLeaderOneOption) => {
+        if (selectedTeamLeaderOneOption) {
+            setSelectedTeamLeaderOne(selectedTeamLeaderOneOption)
+        }
+    }
+    // onChange Function for Sales Agent
+    const handleSaleAgentChange = (selectedSalesAgentOption) => {
+        if (selectedSalesAgentOption) {
+            setSelectedSalesAgent(selectedSalesAgentOption)
+        }
+    }
+    // onChange Function for Team  Sales Agent One
+    const handleSaleAgentOneChange = (selectedSalesAgentOneOption) => {
+        if (selectedSalesAgentOneOption) {
+            setSelectedSalesAgentOne(selectedSalesAgentOneOption)
+        }
+    }
+    // onChange Function for Marketing Manager
+    const handleMarketingManagerChange = (selectedMarketingManagerOption) => {
+        if (selectedMarketingManagerOption) {
+            setSelectedMarketingManager(selectedMarketingManagerOption)
+        }
+    }
+    // onChange Function for Marketing Agent
+    const handleMarketingAgentChange = (selectedMarketingAgentOption) => {
+        if (selectedMarketingAgentOption) {
+            setSelectedMarketingAgent(selectedMarketingAgentOption)
+        }
+    }
+    // onChange Function for Tele sales Agent
+    const handleTelesalesHodChange = (selectedTelesalesOption) => {
+        if (selectedTelesalesOption) {
+            setSelectedTeleSalesMaangers(selectedTelesalesOption)
+        }
+    }
+    // onChange Function for Tele salesTeam Leader
+    const handleTelesalesTeamLeaderChange = (selectedTelesalesTeamLeaderOption) => {
+        if (selectedTelesalesTeamLeaderOption) {
+            setSelectedTeleSalesTeamLeader(selectedTelesalesTeamLeaderOption)
+        }
+    }
+        // onChange Function for Tele sales Agent
+        const handleTelesalesAgentChange = (selectedTelesalesAgentOption) => {
+            if (selectedTelesalesAgentOption) {
+                setSelectedTeleSalesAgent(selectedTelesalesAgentOption)
+            }
+        }
 
     // Post API For Lead Convert to Contract
     const LeadConvertHandler = async () => {
@@ -466,9 +521,9 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                 agent_commission: agentCommission,
                 ts_hod: selectedTeleSalesMaangers ? selectedTeleSalesMaangers.value : null,
                 ts_hod_commision: teleSalesHodCommission,
-                ts_team_leader:selectedtelesalesTeamLeader ? selectedtelesalesTeamLeader.value : null,
+                ts_team_leader: selectedtelesalesTeamLeader ? selectedtelesalesTeamLeader.value : null,
                 ts_team_leader_commission: teleSalesTeamLeaderCommission,
-                tsagent:selectedtelesalesAgent ? selectedtelesalesAgent.value : null,
+                tsagent: selectedtelesalesAgent ? selectedtelesalesAgent.value : null,
                 tsagent_commission: teleSalesAgentCommission,
                 marketingmanager: selectedMarketingManager ? selectedMarketingManager.value : null,
                 marketingmanagercommission: marketingManagerCommission,
@@ -605,7 +660,7 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                             options={managerOptions}  // Set the filtered Manager options here
                                             placeholder="Select Manager"
                                             isClearable
-                                            onChange={HandlerChange}
+                                            onChange={handleManagerChange}
                                         />
                                     </Form.Group>
                                 </Col>
@@ -632,7 +687,7 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                             options={coordinatorOptions}  // Set the filtered Manager options here
                                             placeholder="Coordinator"
                                             isClearable
-                                            onChange={HandlerChange}
+                                            onChange={handleCoordinatorChange}
                                         />
                                     </Form.Group>
                                 </Col>
@@ -657,7 +712,7 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                             options={teamLeaderOptions} // Use the teamLeaderOptions array here
                                             placeholder="Team Leader"
                                             isClearable
-                                            onChange={HandlerChange}
+                                            onChange={handleTeamLeaderChange}
                                         />
                                     </Form.Group>
                                 </Col>
@@ -684,7 +739,7 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                             options={teamLeaderOptions} // Use the teamLeaderOptions array here
                                             placeholder="Team Leader"
                                             isClearable
-                                            onChange={HandlerChange}
+                                            onChange={handleTeamLeaderOneChange}
                                         />
                                     </Form.Group>
                                 </Col>
@@ -709,7 +764,7 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                             options={tsAgentOptions} // Use the tsAgentOptions array here
                                             placeholder="Sales Agent"
                                             isClearable
-                                            onChange={HandlerChange}
+                                            onChange={handleSaleAgentChange}
                                         />
                                     </Form.Group>
                                 </Col>
@@ -736,7 +791,7 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                             options={tsAgentOptions} // Use the tsAgentOptions array here
                                             placeholder="Sales Agent"
                                             isClearable
-                                            onChange={HandlerChange}
+                                            onChange={handleSaleAgentOneChange}
                                         />
                                     </Form.Group>
                                 </Col>
@@ -770,7 +825,7 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                                                 placeholder="Managers"
                                                                 options={userOptions}
                                                                 getOptionLabel={option => option.label}
-                                                                onChange={HandlerChange}
+                                                                onChange={handleMarketingManagerChange}
                                                             />
                                                         </Form.Group>
                                                     </Col>
@@ -794,7 +849,7 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                                                 placeholder="Marketing Agent"
                                                                 options={userOptions}
                                                                 getOptionLabel={option => option.label}
-                                                                onChange={HandlerChange}
+                                                                onChange={handleMarketingAgentChange}
                                                             />
                                                         </Form.Group>
                                                     </Col>
@@ -824,7 +879,7 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                                                 options={userOptions}
                                                                 getOptionLabel={option => option.label}
                                                                 getOptionValue={option => option.value}
-                                                                onChange={HandlerChange}
+                                                                onChange={handleTelesalesHodChange}
                                                             />
                                                         </Form.Group>
                                                     </Col>
@@ -849,7 +904,7 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                                                 options={userOptions}
                                                                 getOptionLabel={option => option.label}
                                                                 getOptionValue={option => option.value}
-                                                                onChange={HandlerChange}
+                                                                onChange={handleTelesalesTeamLeaderChange}
                                                             />
                                                         </Form.Group>
                                                     </Col>
@@ -874,7 +929,7 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                                                 options={userOptions}
                                                                 getOptionLabel={option => option.label}
                                                                 getOptionValue={option => option.value}
-                                                                onChange={HandlerChange}
+                                                                onChange={handleTelesalesAgentChange}
                                                             />
                                                         </Form.Group>
                                                     </Col>

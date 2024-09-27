@@ -118,6 +118,161 @@
     background: #a8a8a8;
 }
 
+.single_lead_icons {
+    width: 45px;
+    height: 45px;
+    border-radius: 17.3552px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    background: linear-gradient(141.55deg, #B9406B 3.46%, #B9406B 99.86%), #B9406B !important;
+}
+
+.single_lead_icons_one {
+    width: 45px;
+    height: 45px;
+    border-radius: 17.3552px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    background: linear-gradient(141.55deg, #ffa21d 3.46%, #ffa21d 99.86%), #ffa21d !important;
+}
+
+.single_lead_icons_two {
+    width: 45px;
+    height: 45px;
+    border-radius: 17.3552px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    background: linear-gradient(141.55deg, #3ec9d6 3.46%, #3ec9d6 99.86%), #3ec9d6 !important;
+}
+
+.single_lead_upper_container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 1%;
+}
+
+.first_card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+}
+
+.lead_users_delete_btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    background: linear-gradient(141.55deg, #ff3a6e 3.46%, #ff3a6e 99.86%), #ff3a6e !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lead_user_class {
+    height: 100%;
+    max-height: 500px;
+    overflow-y: scroll;
+}
+
+.discussion_files {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.lead_discussion_main_card {
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+
+.lead_discussion_main_card_activity_log {
+    height: 100%;
+    max-height: 500px;
+    overflow-y: scroll;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    margin-bottom: 3%;
+}
+
+.upload_btn,
+.upload_btn:active,
+.upload_btn:visited,
+.upload_btn:focus-visible,
+.upload_btn:focus,
+.upload_btn:hover {
+    background-color: #d7aa47;
+    border: none;
+}
+
+.card_discussion {
+    height: 100%;
+    max-height: 400px;
+    overflow-y: scroll;
+    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+}
+
+.activity_log {
+    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+    border-radius: 20px;
+    padding: 10px;
+}
+
+.image_control_discussion {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.image_control_discussion_files {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+}
+
+.image-upload:hover {
+    border-color: #0056b3;
+    transition: border-color 0.3s;
+}
+
+.image-upload p {
+    margin: 0;
+}
+
+.hover-link {
+    text-decoration: none;
+    color: black;
+    padding: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.hover-link:hover {
+    background-color: #b9406b;
+    color: white;
+    border-radius: 5px;
+    padding: 8px;
+}
+
+.hover_link_services {
+    text-decoration: none;
+    color: black;
+    transition: background-color 0.3s ease;
+}
+
+.hover_link_services:hover {
+    color: white;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .stage-column {

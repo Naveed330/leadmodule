@@ -12,6 +12,8 @@ import TransferLeads from '../Components/transferLeads/TransferLeads';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import './style.css'; // Ensure this CSS file styles your components appropriately
 import ConvertLead from '../Components/convertLead/ConvertLead';
+import { Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 const Leads = () => {
     // State variables
@@ -339,7 +341,10 @@ const Leads = () => {
                                                                                     <Button size="small" onClick={(e) => { e.stopPropagation(); openTransferLeadModal(lead._id); }}>Transfer</Button>
                                                                                     <Button size="small" onClick={(e) => { e.stopPropagation(); openLeadConvertModal(lead._id); }}>Convert</Button>
                                                                                 </div>
-                                                                                <p className='mb-1'><strong>Name:</strong> {lead.client?.name}</p>
+
+                                                                                <Link to={`/single-leads/${lead._id}`} style={{ textDecoration: 'none', color: 'black' }} >
+                                                                                    <p className='mb-1'><strong>Name:</strong> {lead.client?.name}</p>
+                                                                                </Link>
                                                                                 <p><strong>Stage:</strong> {lead.product_stage?.name}</p>
                                                                             </Card>
                                                                         )}
