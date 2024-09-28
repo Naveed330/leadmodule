@@ -24,6 +24,7 @@ const CreateLead = ({ modal2Open, setModal2Open, fetchLeadsData }) => {
         clientPhone: '',
         clientName: '',
         clientEmail: '',
+        company_Name: '',
         products: productUserSlice || null,
         product_stage: '',
         lead_type: '',
@@ -99,7 +100,6 @@ const CreateLead = ({ modal2Open, setModal2Open, fetchLeadsData }) => {
                     Authorization: `Bearer ${token}`
                 }
             });
-            console.log('Form data submitted:', formData);
             fetchLeadsData()
             setModal2Open(false);
         } catch (error) {
@@ -139,6 +139,18 @@ const CreateLead = ({ modal2Open, setModal2Open, fetchLeadsData }) => {
                                 onChange={handleInputChange}
                             />
                         </Form.Group>
+
+                        <Form.Group className="mb-3" controlId="company_Name">
+                            <Form.Label>Company Name</Form.Label>
+                            <Form.Control
+                                type="text"
+                                placeholder="Enter Company Name"
+                                name="company_Name"
+                                value={formData.company_Name}
+                                onChange={handleInputChange}
+                            />
+                        </Form.Group>
+
                         <Form.Group className="mb-3" controlId="clientEmail">
                             <Form.Label>Client Email</Form.Label>
                             <Form.Control
@@ -260,7 +272,7 @@ const CreateLead = ({ modal2Open, setModal2Open, fetchLeadsData }) => {
                         )}
 
                         <Form.Group className="mb-3" controlId="description">
-                            <Form.Label>Description</Form.Label>
+                            <Form.Label>Lead Details</Form.Label>
                             <Form.Control
                                 as="textarea"
                                 rows={3}

@@ -36,6 +36,16 @@
     padding-bottom: 1rem;
 }
 
+.message_sender {
+    width: 100%;
+    max-width: 130px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
 /* Wrapper to hold all stages in a row */
 .stages-wrapper {
     display: flex;
@@ -195,6 +205,15 @@
 
 .lead_discussion_main_card {
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    overflow-y: scroll;
+
+}
+
+.lead_discussion_main_card_main {
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    overflow-y: scroll;
+    height: 100%;
+    max-height: 800px;
 }
 
 .lead_discussion_main_card_activity_log {
@@ -220,6 +239,22 @@
     max-height: 400px;
     overflow-y: scroll;
     box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+}
+
+.card_discussion_chat_boat {
+    height: 100%;
+    max-height: 600px;
+    overflow-y: scroll;
+    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+}
+
+.whatspp_send_message,
+.whatspp_send_message:hover,
+.whatspp_send_message:focus,
+.whatspp_send_message:visited,
+.whatspp_send_message:focus-visible {
+    background-color: #b9406b;
+    border: none;
 }
 
 .activity_log {

@@ -7,11 +7,14 @@ import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { MdOutlinePhone, MdOutlineEmail } from "react-icons/md";
 import { SiEmirates } from "react-icons/si";
-import './style.css'; // Ensure this CSS file styles your components appropriately
+import './style.css';
 import LeadUsers from '../Components/LeadUsers';
 import LeadDiscussion from '../Components/LeadDiscussion';
 import ActivityLead from '../Components/ActivityLead';
 import { IoChevronForwardOutline } from "react-icons/io5";
+import FileUploader from '../Components/FileUploader';
+import WhatsappNotification from '../Components/whatsappNotification/WhatsappNotification'
+import { FaWhatsapp } from "react-icons/fa";
 
 const SingleLead = () => {
     // User Token
@@ -41,26 +44,12 @@ const SingleLead = () => {
         <div>
             <Navbar />
             <Container fluid>
-                <Row  >
+                <Row >
                     <Col xs={12} md={12} lg={2}>
                         <Sidebar />
                     </Col>
                     <Col xs={12} md={12} lg={10}>
                         <Row className='mt-4' >
-                            <Col xs={12} md={12} lg={3}>
-                                <Card body className='lead_discussion_main_card' style={{ cursor: 'pointer' }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }} >
-                                        {['Client Info', 'Service Info', 'Users | Sources', 'Discussion | Files', 'Activity'].map((text, index) => (
-                                            <div key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} className="hover-link">
-                                                <Link to={'/'} className="hover_link_services">
-                                                    {text}
-                                                </Link>
-                                                <IoChevronForwardOutline />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </Card>
-                            </Col>
                             <Col xs={12} md={12} lg={9} className='single_lead_col'>
                                 <Card body className='lead_discussion_main_card' >
                                     <h4 style={{ color: '#B9406B', textAlign: 'center' }} > {singleLead.client?.name && singleLead.client?.name} </h4>
@@ -101,6 +90,8 @@ const SingleLead = () => {
                                 <Card body className='mt-4 lead_discussion_main_card' >
                                     <h4 style={{ color: '#B9406B', textAlign: 'center' }} > {singleLead.products?.name && singleLead.products?.name} </h4>
                                     <div className='first_card' >
+
+
                                         <div className='single_lead_upper_container' >
                                             <div className='single_lead_icons' >
                                                 <MdOutlinePhone style={{ fontSize: '24px' }} />
@@ -110,6 +101,8 @@ const SingleLead = () => {
                                                 <h5 className='mb-0' style={{ color: '#B9406B', fontSize: '18px' }}> {singleLead.pipeline_id?.name && singleLead.pipeline_id?.name} </h5>
                                             </div>
                                         </div>
+
+
 
                                         <div className='single_lead_upper_container' >
                                             <div className='single_lead_icons_one' >
@@ -134,11 +127,13 @@ const SingleLead = () => {
                                 </Card>
 
                                 <LeadUsers singleLead={singleLead} />
-                                <LeadDiscussion singleLead={singleLead} id={id} />
+                                <FileUploader singleLead={singleLead} id={id} />
                                 <ActivityLead singleLead={singleLead} />
                             </Col>
 
-
+                            <Col xs={12} md={12} lg={3}>
+                                <LeadDiscussion singleLead={singleLead} id={id} />
+                            </Col>
                         </Row>
                     </Col>
                 </Row>
