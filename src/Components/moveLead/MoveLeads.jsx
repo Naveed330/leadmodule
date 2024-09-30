@@ -82,8 +82,8 @@ const MoveLeads = ({ setMoveLeadModal, moveLeadModal, leadId, fetchLeadsData }) 
                 }
             );
             // Optionally, you can handle success here (e.g., close modal or show a success message)
-            setMoveLeadModal(false);
             fetchLeadsData()
+            setMoveLeadModal(false);
         } catch (error) {
             console.error('Error moving leads:', error);
         }
@@ -101,7 +101,7 @@ const MoveLeads = ({ setMoveLeadModal, moveLeadModal, leadId, fetchLeadsData }) 
                 <Modal.Body>
                     <h4>Move Leads</h4>
                     <Form>
-                        
+
                         {/* Branch Selection */}
                         <Form.Label>Branch</Form.Label>
                         <Form.Select

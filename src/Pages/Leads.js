@@ -14,6 +14,7 @@ import './style.css'; // Ensure this CSS file styles your components appropriate
 import ConvertLead from '../Components/convertLead/ConvertLead';
 import { Link } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
+import WhatsappNotification from '../Components/whatsappNotification/WhatsappNotification';
 
 const Leads = () => {
     // State variables
@@ -29,7 +30,10 @@ const Leads = () => {
     const [moveLeadModal, setMoveLeadModal] = useState(false);
     const [transferModal, setTransferModal] = useState(false);
     const [leadtocontract, setLeadToContract] = useState(false)
+    const [whtsappModal, setWhatsAppModal] = useState(false)
+    const [clientId, setClientId] = useState('')
     const [leadId, setLeadId] = useState(null);
+    const [messageCounts, setMessageCounts] = useState({});
 
     // Redux State
     const token = useSelector(state => state.loginSlice.user?.token);
@@ -80,14 +84,27 @@ const Leads = () => {
             const { data } = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/leads/get-leads`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
+
+            // Set leads data
             setLeadsData(data.leads || []);
             setFilteredLeads(data.leads || []);
+
+            // Initialize message count map
+            const messageCountMap = {};
+
+            // Iterate through each lead and set message counts
+            data.leads.forEach(lead => {
+                const messageCount = Array.isArray(lead.messages) ? lead.messages.length : 0;
+                messageCountMap[lead._id] = messageCount;
+            });
+            setMessageCounts(messageCountMap);
         } catch (error) {
             console.error('Error fetching leads:', error);
         } finally {
             setLoading(false);
         }
     };
+
 
     // Initial data fetch
     useEffect(() => {
@@ -234,6 +251,25 @@ const Leads = () => {
         setLeadToContract(true);
     }
 
+    const openWhtsappModal = (id, clientId) => {
+        setLeadId(id);
+        setClientId(clientId)
+        setWhatsAppModal(true);
+    }
+
+    const RejectedLead = async (id) => {
+        try {
+            await axios.put(`${process.env.REACT_APP_BASE_URL}/api/leads/reject-lead/${id}`, {}, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            })
+            fetchLeadsData()
+        } catch (error) {
+            console.log(error, 'err')
+        }
+    }
+
     return (
         <>
             <Navbar />
@@ -335,11 +371,13 @@ const Leads = () => {
                                                                                     ...provided.draggableProps.style
                                                                                 }}
                                                                             >
-                                                                                <div className="lead-actions mb-2" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
-                                                                                    <Button size="small" onClick={(e) => { e.stopPropagation(); openModal(lead._id); }}>Edit</Button>
-                                                                                    <Button size="small" onClick={(e) => { e.stopPropagation(); openMoveLeadModal(lead._id); }}>Move</Button>
-                                                                                    <Button size="small" onClick={(e) => { e.stopPropagation(); openTransferLeadModal(lead._id); }}>Transfer</Button>
-                                                                                    <Button size="small" onClick={(e) => { e.stopPropagation(); openLeadConvertModal(lead._id); }}>Convert</Button>
+                                                                                <div className="lead_actions_container mb-2">
+                                                                                    <Button size="small" className='leads_common_button' onClick={(e) => { e.stopPropagation(); openModal(lead._id); }}>Edit</Button>
+                                                                                    <Button size="small" className='leads_common_button' onClick={(e) => { e.stopPropagation(); openMoveLeadModal(lead._id); }}>Move</Button>
+                                                                                    <Button size="small" className='leads_common_button' onClick={(e) => { e.stopPropagation(); openTransferLeadModal(lead._id); }}>Transfer</Button>
+                                                                                    <Button size="small" className='leads_common_button' onClick={(e) => { e.stopPropagation(); openLeadConvertModal(lead._id); }}>Convert</Button>
+                                                                                    <Button size="small" className='leads_common_button' onClick={(e) => { e.stopPropagation(); openWhtsappModal(lead._id, lead.client._id) }}>Whatsapp Notification ({messageCounts[lead._id] || 0})</Button>
+                                                                                    <Button size="small" className='leads_common_button' onClick={(e) => { e.stopPropagation(); RejectedLead(lead._id, lead) }} >Rejected Lead</Button>
                                                                                 </div>
 
                                                                                 <Link to={`/single-leads/${lead._id}`} style={{ textDecoration: 'none', color: 'black' }} >
@@ -397,6 +435,7 @@ const Leads = () => {
                 />
 
                 <ConvertLead leadId={leadId} setLeadToContract={setLeadToContract} leadtocontract={leadtocontract} />
+                <WhatsappNotification leadId={leadId} whtsappModal={whtsappModal} setWhatsAppModal={setWhatsAppModal} clientId={clientId} />
             </Container>
         </>
     );
