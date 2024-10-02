@@ -2,8 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Navbar from '../Components/navbar/Navbar';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
-import { Button, Card, Spin, Tooltip } from 'antd';
-import { Container, Row, Col } from 'react-bootstrap';
+import { Button, Card, Spin, Tooltip, Dropdown, Menu } from 'antd';
+import { Container, Row, Col, Image } from 'react-bootstrap';
 import Sidebar from '../Components/sidebar/Sidebar';
 import CreateLead from '../Components/createLead/CreateLead';
 import EditLead from '../Components/editlead/EditLead';
@@ -13,7 +13,9 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import './style.css'; // Ensure this CSS file styles your components appropriately
 import ConvertLead from '../Components/convertLead/ConvertLead';
 import { Link } from 'react-router-dom';
-import { useParams } from 'react-router-dom';
+import { BsThreeDotsVertical } from "react-icons/bs";
+import WhatsappNotification from '../Components/whatsappNotification/WhatsappNotification';
+import default_image from '../Assets/default_image.jpg'
 
 const Leads = () => {
     // State variables
@@ -29,7 +31,10 @@ const Leads = () => {
     const [moveLeadModal, setMoveLeadModal] = useState(false);
     const [transferModal, setTransferModal] = useState(false);
     const [leadtocontract, setLeadToContract] = useState(false)
+    const [whtsappModal, setWhatsAppModal] = useState(false)
+    const [clientId, setClientId] = useState('')
     const [leadId, setLeadId] = useState(null);
+    const [messageCounts, setMessageCounts] = useState({});
 
     // Redux State
     const token = useSelector(state => state.loginSlice.user?.token);
@@ -80,14 +85,27 @@ const Leads = () => {
             const { data } = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/leads/get-leads`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
+
+            // Set leads data
             setLeadsData(data.leads || []);
             setFilteredLeads(data.leads || []);
+
+            // Initialize message count map
+            const messageCountMap = {};
+
+            // Iterate through each lead and set message counts
+            data.leads.forEach(lead => {
+                const messageCount = Array.isArray(lead.messages) ? lead.messages.length : 0;
+                messageCountMap[lead._id] = messageCount;
+            });
+            setMessageCounts(messageCountMap);
         } catch (error) {
             console.error('Error fetching leads:', error);
         } finally {
             setLoading(false);
         }
     };
+
 
     // Initial data fetch
     useEffect(() => {
@@ -234,6 +252,48 @@ const Leads = () => {
         setLeadToContract(true);
     }
 
+    const openWhtsappModal = (id, clientId) => {
+        setLeadId(id);
+        setClientId(clientId)
+        setWhatsAppModal(true);
+    }
+
+    const RejectedLead = async (id) => {
+        try {
+            await axios.put(`${process.env.REACT_APP_BASE_URL}/api/leads/reject-lead/${id}`, {}, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            })
+            fetchLeadsData()
+        } catch (error) {
+            console.log(error, 'err')
+        }
+    }
+
+    const renderMenu = (lead) => (
+        <Menu>
+            <Menu.Item key="edit" onClick={() => openModal(lead._id)}>
+                Edit
+            </Menu.Item>
+            <Menu.Item key="move" onClick={() => openMoveLeadModal(lead._id)}>
+                Move
+            </Menu.Item>
+            <Menu.Item key="transfer" onClick={() => openTransferLeadModal(lead._id)}>
+                Transfer
+            </Menu.Item>
+            <Menu.Item key="convert" onClick={() => openLeadConvertModal(lead._id)}>
+                Convert
+            </Menu.Item>
+            <Menu.Item key="reject" onClick={() => RejectedLead(lead._id)}>
+                Reject
+            </Menu.Item>
+            <Menu.Item key="whatsapp" onClick={() => openWhtsappModal(lead._id, lead.client._id)}>
+                WhatsApp
+            </Menu.Item>
+        </Menu>
+    );
+
     return (
         <>
             <Navbar />
@@ -302,54 +362,56 @@ const Leads = () => {
                                             <Droppable key={stage._id} droppableId={stage._id}>
                                                 {(provided, snapshot) => (
                                                     <div
-                                                        className="stage-column mx-2"
                                                         ref={provided.innerRef}
                                                         {...provided.droppableProps}
                                                         style={{
-                                                            background: snapshot.isDraggingOver ? '#f0f0f0' : '#ffffff',
+                                                            // background: snapshot.isDraggingOver ? '#f0f0f0' : '#ffffff',
                                                             padding: 8,
                                                             minWidth: 250,
                                                             borderRadius: 4,
-                                                            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                                                            // boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
                                                             maxHeight: '70vh',
                                                             overflowY: 'auto'
                                                         }}
+                                                        className="stage-column mx-2"
                                                     >
                                                         <Card className="stage-card" bordered>
                                                             <h5 className="text-center stage-title">{stage.name}</h5>
                                                             <div className="leads-container">
-                                                                {stagesWithLeads.find(s => s.stage._id === stage._id)?.leads.map((lead, index) => (
-                                                                    <Draggable key={lead._id} draggableId={lead._id} index={index}>
-                                                                        {(provided, snapshot) => (
-                                                                            <Card
-                                                                                ref={provided.innerRef}
-                                                                                {...provided.draggableProps}
-                                                                                {...provided.dragHandleProps}
-                                                                                size="small"
-                                                                                className="lead-card mb-2"
-                                                                                hoverable
-                                                                                onClick={() => draggableCardHandler(lead._id, stage._id)}
-                                                                                style={{
-                                                                                    userSelect: 'none',
-                                                                                    background: snapshot.isDragging ? '#e6f7ff' : '#ffffff',
-                                                                                    ...provided.draggableProps.style
-                                                                                }}
-                                                                            >
-                                                                                <div className="lead-actions mb-2" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
-                                                                                    <Button size="small" onClick={(e) => { e.stopPropagation(); openModal(lead._id); }}>Edit</Button>
-                                                                                    <Button size="small" onClick={(e) => { e.stopPropagation(); openMoveLeadModal(lead._id); }}>Move</Button>
-                                                                                    <Button size="small" onClick={(e) => { e.stopPropagation(); openTransferLeadModal(lead._id); }}>Transfer</Button>
-                                                                                    <Button size="small" onClick={(e) => { e.stopPropagation(); openLeadConvertModal(lead._id); }}>Convert</Button>
-                                                                                </div>
+                                                                {stagesWithLeads.find(s => s.stage._id === stage._id)?.leads.map((lead, index) => {
+                                                                    console.log(lead, 'leadData')
+                                                                    return (
+                                                                        <>
+                                                                            <Draggable key={lead._id} draggableId={lead._id} index={index}>
+                                                                                {(provided) => (
+                                                                                    <Card
+                                                                                        ref={provided.innerRef}
+                                                                                        {...provided.draggableProps}
+                                                                                        {...provided.dragHandleProps}
+                                                                                        className="lead_card mb-2"
 
-                                                                                <Link to={`/single-leads/${lead._id}`} style={{ textDecoration: 'none', color: 'black' }} >
-                                                                                    <p className='mb-1'><strong>Name:</strong> {lead.client?.name}</p>
-                                                                                </Link>
-                                                                                <p><strong>Stage:</strong> {lead.product_stage?.name}</p>
-                                                                            </Card>
-                                                                        )}
-                                                                    </Draggable>
-                                                                ))}
+                                                                                    >
+                                                                                        <div style={{ display: 'flex', justifyContent: 'space-between' }} >
+                                                                                            <Link to={`/single-leads/${lead._id}`} style={{ textDecoration: 'none', color: 'black' }} >
+                                                                                                <p className='mb-1' style={{ color: '#B9406B', fontWeight: '600', fontSize: '14px' }} >{lead.client?.name && lead.client?.name}</p>
+                                                                                            </Link>
+                                                                                            <Dropdown overlay={renderMenu(lead)} trigger={['click']}>
+                                                                                                <Button icon={<BsThreeDotsVertical />} />
+                                                                                            </Dropdown>
+                                                                                        </div>
+                                                                                        <Image src={lead.image || default_image} className='image_control_discussion' />
+
+                                                                                        <div className='marketing_source_lead' >
+                                                                                            <p className='mb-0' style={{ fontSize: '12px' }} > {lead.lead_type?.name && lead.lead_type?.name} </p>
+                                                                                            <p style={{ fontSize: '12px' }}> {lead.source?.name && lead.source?.name} </p>
+                                                                                        </div>
+                                                                                        <p className='mt-3' >{lead.product_stage?.name && lead.product_stage?.name}</p>
+                                                                                    </Card>
+                                                                                )}
+                                                                            </Draggable>
+                                                                        </>
+                                                                    )
+                                                                })}
                                                                 {provided.placeholder}
                                                             </div>
                                                         </Card>
@@ -365,7 +427,7 @@ const Leads = () => {
                         {/* No Stages or Products Selected */}
                         {(!selectedProduct || productStages.length === 0) && (
                             <div className="no-stages mt-4">
-                                <h5>No stages or products selected. Please select a product and/or branch.</h5>
+                                <h5>No Stages or Products Selected. Please Select a Product and Branch.</h5>
                             </div>
                         )}
                     </Col>
@@ -397,6 +459,7 @@ const Leads = () => {
                 />
 
                 <ConvertLead leadId={leadId} setLeadToContract={setLeadToContract} leadtocontract={leadtocontract} />
+                <WhatsappNotification leadId={leadId} whtsappModal={whtsappModal} setWhatsAppModal={setWhatsAppModal} clientId={clientId} />
             </Container>
         </>
     );

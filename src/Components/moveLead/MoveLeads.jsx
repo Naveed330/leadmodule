@@ -5,17 +5,35 @@ import Form from 'react-bootstrap/Form';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 
-const MoveLeads = ({ setMoveLeadModal, moveLeadModal, leadId, fetchLeadsData }) => {
+const MoveLeads = ({ setMoveLeadModal, moveLeadModal, leadId, fetchLeadsData, fetchSingleLead }) => {
     const [pipeline, setPipeline] = useState('');
     const [branch, setBranch] = useState('');
     const [selectedProduct, setSelectedProduct] = useState('');
     const [selectedProductStage, setSelectedProductStage] = useState('');
-    const [productStage, setProductStage] = useState([]);
+    const [pipelines, setPipelines] = useState([]); // State for pipelines
+    const [productStages, setProductStages] = useState([]); // State for product stages
 
-    const pipelineSlice = useSelector(state => state.loginSlice.pipelines);
     const branchesSlice = useSelector(state => state.loginSlice.branches || []);
     const token = useSelector(state => state.loginSlice.user?.token);
 
+    // Fetch pipelines data on component mount
+    useEffect(() => {
+        const fetchPipelines = async () => {
+            try {
+                const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/pipelines/get-pipelines`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                setPipelines(response.data); // Store fetched pipelines
+            } catch (error) {
+                console.error('Error fetching pipelines:', error);
+            }
+        };
+        fetchPipelines();
+    }, [token]);
+
+    // Fetch lead data and set selected product
     useEffect(() => {
         const fetchLeadData = async () => {
             try {
@@ -34,28 +52,32 @@ const MoveLeads = ({ setMoveLeadModal, moveLeadModal, leadId, fetchLeadsData }) 
         fetchLeadData();
     }, [leadId, token]);
 
+    // Fetch product stages based on selected pipeline
     useEffect(() => {
         const fetchProductStages = async () => {
-            if (selectedProduct) {
+            if (pipeline) {
                 try {
-                    const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/productstages/${selectedProduct}`, {
+                    const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/productstages/pipeline/${pipeline}`, {
                         headers: {
                             Authorization: `Bearer ${token}`,
                         },
                     });
-                    setProductStage(response.data); // Update product stages based on the selected product
+                    setProductStages(response.data); // Set fetched product stages
+                    setSelectedProductStage(''); // Reset product stage selection
                 } catch (error) {
                     console.error('Error fetching product stages:', error);
                 }
             } else {
-                setProductStage([]); // Clear product stages if no product is selected
+                setProductStages([]); // Clear product stages if no pipeline is selected
             }
         };
         fetchProductStages();
-    }, [selectedProduct, token]);
+    }, [pipeline, token]);
 
+    // Handlers for form fields
     const handlePipelineChange = (e) => {
         setPipeline(e.target.value);
+        setSelectedProductStage(''); // Reset selected stage when pipeline changes
     };
 
     const handleBranchChange = (e) => {
@@ -66,6 +88,7 @@ const MoveLeads = ({ setMoveLeadModal, moveLeadModal, leadId, fetchLeadsData }) 
         setSelectedProductStage(e.target.value);
     };
 
+    // Move leads handler
     const moveLeadsHandler = async () => {
         try {
             await axios.put(
@@ -73,7 +96,7 @@ const MoveLeads = ({ setMoveLeadModal, moveLeadModal, leadId, fetchLeadsData }) 
                 {
                     pipeline,
                     branch,
-                    product_stage: selectedProductStage
+                    product_stage: selectedProductStage,
                 },
                 {
                     headers: {
@@ -81,9 +104,9 @@ const MoveLeads = ({ setMoveLeadModal, moveLeadModal, leadId, fetchLeadsData }) 
                     },
                 }
             );
-            // Optionally, you can handle success here (e.g., close modal or show a success message)
+            fetchLeadsData();
+            fetchSingleLead();
             setMoveLeadModal(false);
-            fetchLeadsData()
         } catch (error) {
             console.error('Error moving leads:', error);
         }
@@ -101,7 +124,6 @@ const MoveLeads = ({ setMoveLeadModal, moveLeadModal, leadId, fetchLeadsData }) 
                 <Modal.Body>
                     <h4>Move Leads</h4>
                     <Form>
-                        
                         {/* Branch Selection */}
                         <Form.Label>Branch</Form.Label>
                         <Form.Select
@@ -127,7 +149,7 @@ const MoveLeads = ({ setMoveLeadModal, moveLeadModal, leadId, fetchLeadsData }) 
                             onChange={handlePipelineChange}
                         >
                             <option value="">Select Pipeline</option>
-                            {pipelineSlice.map(pipeline => (
+                            {pipelines.map(pipeline => (
                                 <option key={pipeline._id} value={pipeline._id}>
                                     {pipeline.name}
                                 </option>
@@ -135,22 +157,20 @@ const MoveLeads = ({ setMoveLeadModal, moveLeadModal, leadId, fetchLeadsData }) 
                         </Form.Select>
 
                         {/* Product Stage Selection */}
-                        <Form.Group className="mb-3" controlId="productStage">
-                            <Form.Label>Product Stage</Form.Label>
-                            <Form.Select
-                                aria-label="Select Product Stage"
-                                name="product_stage"
-                                value={selectedProductStage}
-                                onChange={handleProductStageChange}
-                            >
-                                <option value="">Select Product Stage</option>
-                                {productStage.map(stage => (
-                                    <option key={stage._id} value={stage._id}>
-                                        {stage.name}
-                                    </option>
-                                ))}
-                            </Form.Select>
-                        </Form.Group>
+                        <Form.Label>Product Stage</Form.Label>
+                        <Form.Select
+                            aria-label="Select Product Stage"
+                            name="productStage"
+                            value={selectedProductStage}
+                            onChange={handleProductStageChange}
+                        >
+                            <option value="">Select Product Stage</option>
+                            {productStages.map(stage => (
+                                <option key={stage._id} value={stage._id}>
+                                    {stage.name}
+                                </option>
+                            ))}
+                        </Form.Select>
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
@@ -160,6 +180,7 @@ const MoveLeads = ({ setMoveLeadModal, moveLeadModal, leadId, fetchLeadsData }) 
                     <Button
                         variant="primary"
                         onClick={moveLeadsHandler}
+                        disabled={!branch || !pipeline || !selectedProductStage} // Disable if any field is empty
                     >
                         Move Leads
                     </Button>
@@ -168,4 +189,5 @@ const MoveLeads = ({ setMoveLeadModal, moveLeadModal, leadId, fetchLeadsData }) 
         </div>
     );
 };
+
 export default MoveLeads;

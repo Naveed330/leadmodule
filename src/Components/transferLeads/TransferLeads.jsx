@@ -5,19 +5,39 @@ import Form from 'react-bootstrap/Form';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 
-const TransferLeads = ({ fetchLeadsData, leadId, transferModal, setTransferModal }) => {
-    const [pipeline, setPipeline] = useState('');
+const TransferLeads = ({ fetchLeadsData, leadId, transferModal, setTransferModal, fetchSingleLead }) => {
+    const [pipelineId, setPipelineId] = useState('');
     const [branch, setBranch] = useState('');
     const [selectedProduct, setSelectedProduct] = useState('');
     const [selectedProductStage, setSelectedProductStage] = useState('');
     const [productStage, setProductStage] = useState([]);
+    const [filteredPipelines, setFilteredPipelines] = useState([]); // New state for filtered pipelines
 
     const pipelines = useSelector(state => state.loginSlice.pipelines);
     const branches = useSelector(state => state.loginSlice.branches || []);
     const products = useSelector(state => state.loginSlice.productNames);
     const token = useSelector(state => state.loginSlice.user?.token);
 
-    // Fetch lead data when modal opens or leadId changes
+    const productPipelineMap = {
+        'Business Banking': ['Business Banking'],
+        'Personal Loan': ['EIB Bank', 'Personal Loan'],
+        'Mortgage Loan': ['Mortgage', 'CEO Mortgage'],
+    };
+
+    useEffect(() => {
+        if (selectedProduct) {
+            const productName = products.find(product => product._id === selectedProduct)?.name;
+            if (productName && productPipelineMap[productName]) {
+                setFilteredPipelines(pipelines.filter(pipeline => productPipelineMap[productName].includes(pipeline.name)));
+            } else {
+                setFilteredPipelines([]); // Clear pipelines if no match found
+            }
+            setPipelineId(''); // Reset pipeline selection
+        } else {
+            setFilteredPipelines(pipelines); // Reset to all pipelines if no product is selected
+        }
+    }, [selectedProduct, pipelines, products]);
+
     useEffect(() => {
         const fetchLeadData = async () => {
             try {
@@ -26,7 +46,7 @@ const TransferLeads = ({ fetchLeadsData, leadId, transferModal, setTransferModal
                 });
                 const leadData = response.data;
                 setSelectedProduct(leadData.products?._id || '');
-                setSelectedProductStage(''); // Clear product stage when the product changes
+                setSelectedProductStage('');
             } catch (error) {
                 console.error('Error fetching lead data:', error);
             }
@@ -36,27 +56,26 @@ const TransferLeads = ({ fetchLeadsData, leadId, transferModal, setTransferModal
         }
     }, [leadId, token]);
 
-    // Fetch product stages when selectedProduct changes
     useEffect(() => {
         const fetchProductStages = async () => {
-            if (selectedProduct) {
+            if (selectedProduct && pipelineId) {
                 try {
-                    const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/productstages/${selectedProduct}`, {
+                    const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/productstages/pipeline/${pipelineId}`, {
                         headers: { Authorization: `Bearer ${token}` },
                     });
-                    setProductStage(response.data); // Update product stages
+                    setProductStage(response.data);
                 } catch (error) {
                     console.error('Error fetching product stages:', error);
                 }
             } else {
-                setProductStage([]); // Clear product stages if no product is selected
+                setProductStage([]);
             }
         };
         fetchProductStages();
-    }, [selectedProduct, token]);
+    }, [selectedProduct, pipelineId, token]);
 
     const handlePipelineChange = (e) => {
-        setPipeline(e.target.value);
+        setPipelineId(e.target.value);
     };
 
     const handleBranchChange = (e) => {
@@ -65,22 +84,22 @@ const TransferLeads = ({ fetchLeadsData, leadId, transferModal, setTransferModal
 
     const handleProductChange = (e) => {
         setSelectedProduct(e.target.value);
-        setSelectedProductStage(''); // Reset product stage when product changes
+        setSelectedProductStage('');
+        setPipelineId('');
     };
 
     const handleProductStageChange = (e) => {
         setSelectedProductStage(e.target.value);
     };
 
-    // Transfer leads API call
     const transferLeads = async () => {
-        if (!pipeline || !branch || !selectedProduct || !selectedProductStage) {
+        if (!pipelineId || !branch || !selectedProduct || !selectedProductStage) {
             alert('Please select all fields before transferring');
             return;
         }
 
         const payload = {
-            pipeline,
+            pipeline: pipelineId,
             branch,
             product_stage: selectedProductStage,
             products: selectedProduct
@@ -94,9 +113,9 @@ const TransferLeads = ({ fetchLeadsData, leadId, transferModal, setTransferModal
                     headers: { Authorization: `Bearer ${token}` },
                 }
             );
-            console.log('Transfer successful:', response.data);
-            setTransferModal(false); // Close modal on success
-            fetchLeadsData(); // Refresh the leads data after transfer
+            fetchLeadsData();
+            fetchSingleLead();
+            setTransferModal(false);
         } catch (error) {
             console.error('Error transferring lead:', error);
         }
@@ -115,7 +134,6 @@ const TransferLeads = ({ fetchLeadsData, leadId, transferModal, setTransferModal
                     <h4>Transfer Leads</h4>
                     <div>
                         <Form>
-                            {/* Branch Selection */}
                             <Form.Label>Branch</Form.Label>
                             <Form.Select
                                 aria-label="Select Branch"
@@ -131,24 +149,7 @@ const TransferLeads = ({ fetchLeadsData, leadId, transferModal, setTransferModal
                                 ))}
                             </Form.Select>
 
-                            {/* Pipeline Selection */}
-                            <Form.Label>Pipeline</Form.Label>
-                            <Form.Select
-                                aria-label="Select Pipeline"
-                                name="pipeline"
-                                value={pipeline}
-                                onChange={handlePipelineChange}
-                            >
-                                <option value="">Select Pipeline</option>
-                                {pipelines.map(pipeline => (
-                                    <option key={pipeline._id} value={pipeline._id}>
-                                        {pipeline.name}
-                                    </option>
-                                ))}
-                            </Form.Select>
-
-                            {/* Product Selection */}
-                            <Form.Group className="mb-3" controlId="product">
+                            <Form.Group controlId="product">
                                 <Form.Label>Product</Form.Label>
                                 <Form.Select
                                     aria-label="Select Product"
@@ -165,7 +166,22 @@ const TransferLeads = ({ fetchLeadsData, leadId, transferModal, setTransferModal
                                 </Form.Select>
                             </Form.Group>
 
-                            {/* Product Stage Selection */}
+                            <Form.Label>Pipeline</Form.Label>
+                            <Form.Select
+                                aria-label="Select Pipeline"
+                                name="pipeline"
+                                value={pipelineId}
+                                onChange={handlePipelineChange}
+                                disabled={!selectedProduct} // Disable if no product selected
+                            >
+                                <option value="">Select Pipeline</option>
+                                {filteredPipelines.map(pipeline => (
+                                    <option key={pipeline._id} value={pipeline._id}>
+                                        {pipeline.name}
+                                    </option>
+                                ))}
+                            </Form.Select>
+
                             <Form.Group className="mb-3" controlId="productStage">
                                 <Form.Label>Product Stage</Form.Label>
                                 <Form.Select
@@ -183,8 +199,6 @@ const TransferLeads = ({ fetchLeadsData, leadId, transferModal, setTransferModal
                                     ))}
                                 </Form.Select>
                             </Form.Group>
-
-
                         </Form>
                     </div>
                 </Modal.Body>
@@ -192,7 +206,6 @@ const TransferLeads = ({ fetchLeadsData, leadId, transferModal, setTransferModal
                     <Button variant="secondary" onClick={() => setTransferModal(false)}>
                         Close
                     </Button>
-                    {/* Transfer Leads Button */}
                     <Button variant="primary" onClick={transferLeads}>
                         Transfer Leads
                     </Button>

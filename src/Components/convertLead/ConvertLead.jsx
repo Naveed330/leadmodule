@@ -5,7 +5,7 @@ import axios from 'axios';
 import Select from 'react-select';
 import './convertLeadStyle.css'
 
-const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
+const ConvertLead = ({ leadId, setLeadToContract, leadtocontract, fetchSingleLead }) => {
     // User Token
     const token = useSelector(state => state.loginSlice.user?.token)
     const [leadData, setLeadData] = useState({});
@@ -488,12 +488,12 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
             setSelectedTeleSalesTeamLeader(selectedTelesalesTeamLeaderOption)
         }
     }
-        // onChange Function for Tele sales Agent
-        const handleTelesalesAgentChange = (selectedTelesalesAgentOption) => {
-            if (selectedTelesalesAgentOption) {
-                setSelectedTeleSalesAgent(selectedTelesalesAgentOption)
-            }
+    // onChange Function for Tele sales Agent
+    const handleTelesalesAgentChange = (selectedTelesalesAgentOption) => {
+        if (selectedTelesalesAgentOption) {
+            setSelectedTeleSalesAgent(selectedTelesalesAgentOption)
         }
+    }
 
     // Post API For Lead Convert to Contract
     const LeadConvertHandler = async () => {
@@ -538,6 +538,8 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                     Authorization: `Bearer ${token}`
                 }
             })
+            fetchSingleLead()
+            setLeadToContract(false)
         } catch (error) {
             console.log(error, 'error')
         }
@@ -545,7 +547,7 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
     return (
         <div>
             <Modal
-                size="lg"
+                size="xl"
                 aria-labelledby="contained-modal-title-vcenter"
                 centered
                 show={leadtocontract}
@@ -557,7 +559,6 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <h4 className='text-center' style={{ fontSize: '1.25rem', color: '#060606' }} >Service Application Form</h4>
                     <Form>
                         <Card className='convertToLead_card'>
                             <Row>
@@ -640,17 +641,29 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                         />
                                     </Form.Group>
                                 </Col>
-                                <Col xs={12} md={3}>
+                                <Col xs={12} md={1}>
                                     <Form.Group className="mb-3" controlId="formHodCommission">
                                         <Form.Control
                                             type="number"
                                             className='convert_to_lead_input_field'
-                                            placeholder='HOD commission (%)'
+                                            placeholder='(%)'
                                             onChange={handleHodCommissionChange}
                                         />
-                                        <Form.Text className="text-muted">
+                                        {/* <Form.Text className="text-muted">
                                             {Math.round(hodCommission)}
-                                        </Form.Text>
+                                        </Form.Text> */}
+                                    </Form.Group>
+                                </Col>
+                                <Col xs={12} md={2}>
+                                    <Form.Group className="mb-3" controlId="formHodCommission">
+                                        <Form.Control
+                                            type="number"
+                                            className='convert_to_lead_input_field'
+                                            placeholder='(%)'
+                                            value={hodCommission}
+                                            disabled
+                                        />
+
                                     </Form.Group>
                                 </Col>
                                 <Col xs={12} md={3}>
@@ -664,17 +677,29 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                         />
                                     </Form.Group>
                                 </Col>
-                                <Col xs={12} md={3}>
+                                <Col xs={12} md={1}>
                                     <Form.Group className="mb-3" controlId="formSalesManagerCommission">
                                         <Form.Control
                                             type="number"
                                             className='convert_to_lead_input_field'
-                                            placeholder='Sales Manager commission (%)'
+                                            placeholder='(%)'
                                             onChange={handleSalesManagerCommissionChange}
                                         />
-                                        <Form.Text className="text-muted">
+                                        {/* <Form.Text className="text-muted">
                                             {Math.round(salesManagerCommission)}
-                                        </Form.Text>
+                                        </Form.Text> */}
+                                    </Form.Group>
+                                </Col>
+                                <Col xs={12} md={2}>
+                                    <Form.Group className="mb-3" controlId="formHodCommission">
+                                        <Form.Control
+                                            type="number"
+                                            className='convert_to_lead_input_field'
+                                            placeholder='(%)'
+                                            value={salesManagerCommission}
+                                            disabled
+                                        />
+
                                     </Form.Group>
                                 </Col>
                             </Row>
@@ -691,18 +716,32 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                         />
                                     </Form.Group>
                                 </Col>
-                                <Col xs={12} md={3}>
+                                <Col xs={12} md={1}>
                                     <Form.Group className="mb-3" controlId="formCoordinatorCommission">
                                         <Form.Control
                                             type="number"
                                             className='convert_to_lead_input_field'
-                                            placeholder='Coordinator Commission (%)'
+                                            placeholder='(%)'
                                             // value={coordinatorCommissionPercentage}
                                             onChange={handleCoordinatorCommissionChange} // Call the new handler
                                         />
-                                        <Form.Text className="text-muted">
+                                        {/* <Form.Text className="text-muted">
                                             {Math.round(coordinatorCommission)}
-                                        </Form.Text>
+                                        </Form.Text> */}
+                                    </Form.Group>
+                                </Col>
+                                <Col xs={12} md={2}>
+                                    <Form.Group className="mb-3" controlId="formCoordinatorCommission">
+                                        <Form.Control
+                                            type="number"
+                                            className='convert_to_lead_input_field'
+                                            placeholder='(%)'
+                                            value={coordinatorCommission}
+                                            disabled
+                                        />
+                                        {/* <Form.Text className="text-muted">
+                                            {Math.round(coordinatorCommission)}
+                                        </Form.Text> */}
                                     </Form.Group>
                                 </Col>
                                 <Col xs={12} md={3}>
@@ -710,24 +749,35 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                         <Select
                                             className="custom-select"
                                             options={teamLeaderOptions} // Use the teamLeaderOptions array here
-                                            placeholder="Team Leader"
+                                            placeholder="Team Leader (1)"
                                             isClearable
                                             onChange={handleTeamLeaderChange}
                                         />
                                     </Form.Group>
                                 </Col>
-                                <Col xs={12} md={3}>
+                                <Col xs={12} md={1}>
                                     <Form.Group className="mb-3" controlId="formTeamLeaderCommission">
                                         <Form.Control
                                             type="number"
                                             className='convert_to_lead_input_field'
-                                            placeholder='Team Leader Commission (%)'
+                                            placeholder='(%)'
                                             // value={teamLeaderCommissionPercentage}
                                             onChange={handleTeamLeaderCommissionChange} // Call the handler here
                                         />
-                                        <Form.Text className="text-muted">
+                                        {/* <Form.Text className="text-muted">
                                             {Math.round(teamLeaderCommission)}
-                                        </Form.Text>
+                                        </Form.Text> */}
+                                    </Form.Group>
+                                </Col>
+                                <Col xs={12} md={2}>
+                                    <Form.Group className="mb-3" controlId="formCoordinatorCommission">
+                                        <Form.Control
+                                            type="number"
+                                            className='convert_to_lead_input_field'
+                                            placeholder='(%)'
+                                            value={teamLeaderCommission}
+                                            disabled
+                                        />
                                     </Form.Group>
                                 </Col>
                             </Row>
@@ -737,24 +787,32 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                         <Select
                                             className="custom-select"
                                             options={teamLeaderOptions} // Use the teamLeaderOptions array here
-                                            placeholder="Team Leader"
+                                            placeholder="Team Leader (2)"
                                             isClearable
                                             onChange={handleTeamLeaderOneChange}
                                         />
                                     </Form.Group>
                                 </Col>
-                                <Col xs={12} md={3}>
+                                <Col xs={12} md={1}>
                                     <Form.Group className="mb-3" controlId="formTeamLeaderCommission">
                                         <Form.Control
                                             type="number"
                                             className='convert_to_lead_input_field'
-                                            placeholder='Team Leader Commission (%)'
+                                            placeholder='(%)'
                                             // value={teamLeaderCommissionPercentage}
                                             onChange={handleTeamLeaderOneCommissionChange} // Call the handler here
                                         />
-                                        <Form.Text className="text-muted">
-                                            {Math.round(teamLeaderOneCommission)}
-                                        </Form.Text>
+                                    </Form.Group>
+                                </Col>
+                                <Col xs={12} md={2}>
+                                    <Form.Group className="mb-3" controlId="formCoordinatorCommission">
+                                        <Form.Control
+                                            type="number"
+                                            className='convert_to_lead_input_field'
+                                            placeholder='(%)'
+                                            value={teamLeaderOneCommission}
+                                            disabled
+                                        />
                                     </Form.Group>
                                 </Col>
                                 <Col xs={12} md={3}>
@@ -762,24 +820,35 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                         <Select
                                             className="custom-select"
                                             options={tsAgentOptions} // Use the tsAgentOptions array here
-                                            placeholder="Sales Agent"
+                                            placeholder="Sales Agent (1)"
                                             isClearable
                                             onChange={handleSaleAgentChange}
                                         />
                                     </Form.Group>
                                 </Col>
-                                <Col xs={12} md={3}>
+                                <Col xs={12} md={1}>
                                     <Form.Group className="mb-3" controlId="formAgentCommission">
                                         <Form.Control
                                             type="number"
                                             className="convert_to_lead_input_field"
-                                            placeholder="Agent Commission (%)"
+                                            placeholder="(%)"
                                             // value={agentCommissionPercentage}
                                             onChange={handleAgentCommissionChange} // Handle the commission calculation
                                         />
-                                        <Form.Text className="text-muted">
+                                        {/* <Form.Text className="text-muted">
                                             {Math.round(agentCommission)}
-                                        </Form.Text>
+                                        </Form.Text> */}
+                                    </Form.Group>
+                                </Col>
+                                <Col xs={12} md={2}>
+                                    <Form.Group className="mb-3" controlId="formCoordinatorCommission">
+                                        <Form.Control
+                                            type="number"
+                                            className='convert_to_lead_input_field'
+                                            placeholder='(%)'
+                                            value={agentCommission}
+                                            disabled
+                                        />
                                     </Form.Group>
                                 </Col>
                             </Row>
@@ -789,24 +858,74 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                         <Select
                                             className="custom-select"
                                             options={tsAgentOptions} // Use the tsAgentOptions array here
-                                            placeholder="Sales Agent"
+                                            placeholder="Sales Agent (2)"
                                             isClearable
                                             onChange={handleSaleAgentOneChange}
                                         />
                                     </Form.Group>
                                 </Col>
-                                <Col xs={12} md={3}>
+                                <Col xs={12} md={1}>
                                     <Form.Group className="mb-3" controlId="formAgentCommission">
                                         <Form.Control
                                             type="number"
                                             className="convert_to_lead_input_field"
-                                            placeholder="Agent Commission (%)"
+                                            placeholder="(%)"
                                             // value={agentCommissionPercentage}
                                             onChange={handleAgentOneCommissionChange} // Handle the commission calculation
                                         />
-                                        <Form.Text className="text-muted">
+                                        {/* <Form.Text className="text-muted">
                                             {Math.round(agentOneCommission)}
-                                        </Form.Text>
+                                        </Form.Text> */}
+                                    </Form.Group>
+                                </Col>
+
+                                <Col xs={12} md={2}>
+                                    <Form.Group className="mb-3" controlId="formCoordinatorCommission">
+                                        <Form.Control
+                                            type="number"
+                                            className='convert_to_lead_input_field'
+                                            placeholder='(%)'
+                                            value={agentOneCommission}
+                                            disabled
+                                        />
+                                    </Form.Group>
+                                </Col>
+
+
+                                <Col xs={12} md={3}>
+                                    <Form.Group className="mb-3" controlId="formBasicTsAgent">
+                                        <Select
+                                            className="custom-select"
+                                            options={tsAgentOptions} // Use the tsAgentOptions array here
+                                            placeholder="Sales Agent (3)"
+                                            isClearable
+                                            onChange={handleSaleAgentOneChange}
+                                        />
+                                    </Form.Group>
+                                </Col>
+                                <Col xs={12} md={1}>
+                                    <Form.Group className="mb-3" controlId="formAgentCommission">
+                                        <Form.Control
+                                            type="number"
+                                            className="convert_to_lead_input_field"
+                                            placeholder="(%)"
+                                            // value={agentCommissionPercentage}
+                                            onChange={handleAgentOneCommissionChange} // Handle the commission calculation
+                                        />
+                                        {/* <Form.Text className="text-muted">
+                                            {Math.round(agentOneCommission)}
+                                        </Form.Text> */}
+                                    </Form.Group>
+                                </Col>
+                                <Col xs={12} md={2}>
+                                    <Form.Group className="mb-3" controlId="formCoordinatorCommission">
+                                        <Form.Control
+                                            type="number"
+                                            className='convert_to_lead_input_field'
+                                            placeholder='(%)'
+                                            value={agentOneCommission}
+                                            disabled
+                                        />
                                     </Form.Group>
                                 </Col>
                             </Row>
@@ -814,7 +933,7 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                             <Card className='convertToLead_card mt-2'>
                                 {leadData && leadData.lead_type && (
                                     <>
-                                        <h5 className='heading_tag'>{leadData.lead_type.name}</h5>
+                                        <h5 className='heading_tag'>{`${leadData.lead_type.name} Team`}</h5>
                                         <Row>
                                             {leadData.lead_type?.name === 'Marketing' && (
                                                 <>
@@ -829,17 +948,28 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                                             />
                                                         </Form.Group>
                                                     </Col>
-                                                    <Col xs={12} md={3}>
+                                                    <Col xs={12} md={1}>
                                                         <Form.Group className="mb-3" controlId="formMarketingManagerCommission">
                                                             <Form.Control
                                                                 type="number"
                                                                 className='convert_to_lead_input_field'
-                                                                placeholder='Marketing Manager commission (%)'
+                                                                placeholder='(%)'
                                                                 onChange={handleMarketingManagerCommissionChange} // Add the handler here
                                                             />
-                                                            <Form.Text className="text-muted">
+                                                            {/* <Form.Text className="text-muted">
                                                                 {Math.round(marketingManagerCommission)}
-                                                            </Form.Text>
+                                                            </Form.Text> */}
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col xs={12} md={2}>
+                                                        <Form.Group className="mb-3" controlId="formCoordinatorCommission">
+                                                            <Form.Control
+                                                                type="number"
+                                                                className='convert_to_lead_input_field'
+                                                                placeholder='(%)'
+                                                                value={marketingManagerCommission}
+                                                                disabled
+                                                            />
                                                         </Form.Group>
                                                     </Col>
                                                     <Col xs={12} md={3}>
@@ -853,12 +983,12 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                                             />
                                                         </Form.Group>
                                                     </Col>
-                                                    <Col xs={12} md={3}>
+                                                    <Col xs={12} md={1}>
                                                         <Form.Group className="mb-3" controlId="formMarketingAgentCommission">
                                                             <Form.Control
                                                                 type="number"
                                                                 className='convert_to_lead_input_field'
-                                                                placeholder='Marketing Agent commission (%)'
+                                                                placeholder='(%)'
                                                                 onChange={handleMarketingAgentCommissionChange} // Add the handler here
                                                             />
                                                             <Form.Text className="text-muted">
@@ -866,6 +996,230 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                                             </Form.Text>
                                                         </Form.Group>
                                                     </Col>
+                                                    <Col xs={12} md={2}>
+                                                        <Form.Group className="mb-3" controlId="formCoordinatorCommission">
+                                                            <Form.Control
+                                                                type="number"
+                                                                className='convert_to_lead_input_field'
+                                                                placeholder='(%)'
+                                                                value={marketingAgentCommission}
+                                                                disabled
+                                                            />
+                                                        </Form.Group>
+                                                    </Col>
+                                                    {/* 2nd */}
+                                                    <Col xs={12} md={3}>
+                                                        <Form.Group className="mb-3" controlId="formTeleSalesHOD">
+                                                            <Select
+                                                                className="custom-select"
+                                                                placeholder="Managers"
+                                                                options={userOptions}
+                                                                getOptionLabel={option => option.label}
+                                                                onChange={handleMarketingManagerChange}
+                                                            />
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col xs={12} md={1}>
+                                                        <Form.Group className="mb-3" controlId="formMarketingManagerCommission">
+                                                            <Form.Control
+                                                                type="number"
+                                                                className='convert_to_lead_input_field'
+                                                                placeholder='(%)'
+                                                                onChange={handleMarketingManagerCommissionChange} // Add the handler here
+                                                            />
+                                                            {/* <Form.Text className="text-muted">
+                                                                {Math.round(marketingManagerCommission)}
+                                                            </Form.Text> */}
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col xs={12} md={2}>
+                                                        <Form.Group className="mb-3" controlId="formCoordinatorCommission">
+                                                            <Form.Control
+                                                                type="number"
+                                                                className='convert_to_lead_input_field'
+                                                                placeholder='(%)'
+                                                                value={marketingManagerCommission}
+                                                                disabled
+                                                            />
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col xs={12} md={3}>
+                                                        <Form.Group className="mb-3" controlId="formTeleSalesHOD">
+                                                            <Select
+                                                                className="custom-select"
+                                                                placeholder="Marketing Agent"
+                                                                options={userOptions}
+                                                                getOptionLabel={option => option.label}
+                                                                onChange={handleMarketingAgentChange}
+                                                            />
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col xs={12} md={1}>
+                                                        <Form.Group className="mb-3" controlId="formMarketingAgentCommission">
+                                                            <Form.Control
+                                                                type="number"
+                                                                className='convert_to_lead_input_field'
+                                                                placeholder='(%)'
+                                                                onChange={handleMarketingAgentCommissionChange} // Add the handler here
+                                                            />
+                                                            {/* <Form.Text className="text-muted">
+                                                                {Math.round(marketingAgentCommission)}
+                                                            </Form.Text> */}
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col xs={12} md={2}>
+                                                        <Form.Group className="mb-3" controlId="formCoordinatorCommission">
+                                                            <Form.Control
+                                                                type="number"
+                                                                className='convert_to_lead_input_field'
+                                                                placeholder='(%)'
+                                                                value={marketingManagerCommission}
+                                                                disabled
+                                                            />
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <h5 className='heading_tag'>Developer Team</h5>
+                                                    <Col xs={12} md={3}>
+                                                        <Form.Group className="mb-3" controlId="formTeleSalesHOD">
+                                                            <Select
+                                                                className="custom-select"
+                                                                placeholder="Managers"
+                                                                options={userOptions}
+                                                                getOptionLabel={option => option.label}
+                                                                onChange={handleMarketingManagerChange}
+                                                            />
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col xs={12} md={1}>
+                                                        <Form.Group className="mb-3" controlId="formMarketingManagerCommission">
+                                                            <Form.Control
+                                                                type="number"
+                                                                className='convert_to_lead_input_field'
+                                                                placeholder='(%)'
+                                                                onChange={handleMarketingManagerCommissionChange} // Add the handler here
+                                                            />
+                                                            {/* <Form.Text className="text-muted">
+                                                                {Math.round(marketingManagerCommission)}
+                                                            </Form.Text> */}
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col xs={12} md={2}>
+                                                        <Form.Group className="mb-3" controlId="formCoordinatorCommission">
+                                                            <Form.Control
+                                                                type="number"
+                                                                className='convert_to_lead_input_field'
+                                                                placeholder='(%)'
+                                                                value={marketingManagerCommission}
+                                                                disabled
+                                                            />
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col xs={12} md={3}>
+                                                        <Form.Group className="mb-3" controlId="formTeleSalesHOD">
+                                                            <Select
+                                                                className="custom-select"
+                                                                placeholder="Marketing Agent"
+                                                                options={userOptions}
+                                                                getOptionLabel={option => option.label}
+                                                                onChange={handleMarketingAgentChange}
+                                                            />
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col xs={12} md={1}>
+                                                        <Form.Group className="mb-3" controlId="formMarketingAgentCommission">
+                                                            <Form.Control
+                                                                type="number"
+                                                                className='convert_to_lead_input_field'
+                                                                placeholder='(%)'
+                                                                onChange={handleMarketingAgentCommissionChange} // Add the handler here
+                                                            />
+                                                            {/* <Form.Text className="text-muted">
+                                                                {Math.round(marketingAgentCommission)}
+                                                            </Form.Text> */}
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col xs={12} md={2}>
+                                                        <Form.Group className="mb-3" controlId="formCoordinatorCommission">
+                                                            <Form.Control
+                                                                type="number"
+                                                                className='convert_to_lead_input_field'
+                                                                placeholder='(%)'
+                                                                value={marketingAgentCommission}
+                                                                disabled
+                                                            />
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col xs={12} md={3}>
+                                                        <Form.Group className="mb-3" controlId="formTeleSalesHOD">
+                                                            <Select
+                                                                className="custom-select"
+                                                                placeholder="Managers"
+                                                                options={userOptions}
+                                                                getOptionLabel={option => option.label}
+                                                                onChange={handleMarketingManagerChange}
+                                                            />
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col xs={12} md={1}>
+                                                        <Form.Group className="mb-3" controlId="formMarketingManagerCommission">
+                                                            <Form.Control
+                                                                type="number"
+                                                                className='convert_to_lead_input_field'
+                                                                placeholder='(%)'
+                                                                onChange={handleMarketingManagerCommissionChange} // Add the handler here
+                                                            />
+                                                            {/* <Form.Text className="text-muted">
+                                                                {Math.round(marketingManagerCommission)}
+                                                            </Form.Text> */}
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col xs={12} md={2}>
+                                                        <Form.Group className="mb-3" controlId="formCoordinatorCommission">
+                                                            <Form.Control
+                                                                type="number"
+                                                                className='convert_to_lead_input_field'
+                                                                placeholder='(%)'
+                                                                value={marketingManagerCommission}
+                                                                disabled
+                                                            />
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col xs={12} md={3}>
+                                                        <Form.Group className="mb-3" controlId="formTeleSalesHOD">
+                                                            <Select
+                                                                className="custom-select"
+                                                                placeholder="Marketing Agent"
+                                                                options={userOptions}
+                                                                getOptionLabel={option => option.label}
+                                                                onChange={handleMarketingAgentChange}
+                                                            />
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col xs={12} md={1}>
+                                                        <Form.Group className="mb-3" controlId="formMarketingAgentCommission">
+                                                            <Form.Control
+                                                                type="number"
+                                                                className='convert_to_lead_input_field'
+                                                                placeholder='(%)'
+                                                                onChange={handleMarketingAgentCommissionChange} // Add the handler here
+                                                            />
+                                                            {/* <Form.Text className="text-muted">
+                                                                {Math.round(marketingAgentCommission)}
+                                                            </Form.Text> */}
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col xs={12} md={2}>
+                                                        <Form.Group className="mb-3" controlId="formCoordinatorCommission">
+                                                            <Form.Control
+                                                                type="number"
+                                                                className='convert_to_lead_input_field'
+                                                                placeholder='(%)'
+                                                                value={marketingAgentCommission}
+                                                                disabled
+                                                            />
+                                                        </Form.Group>
+                                                    </Col>
+
                                                 </>
                                             )}
 
@@ -875,7 +1229,7 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                                         <Form.Group className="mb-3" controlId="formTeleSalesHOD">
                                                             <Select
                                                                 className="custom-select"
-                                                                placeholder="Manager"
+                                                                placeholder="HOD"
                                                                 options={userOptions}
                                                                 getOptionLabel={option => option.label}
                                                                 getOptionValue={option => option.value}
@@ -883,17 +1237,28 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                                             />
                                                         </Form.Group>
                                                     </Col>
-                                                    <Col xs={12} md={3}>
+                                                    <Col xs={12} md={1}>
                                                         <Form.Group className="mb-3" controlId="formTeleSalesHODCommission">
                                                             <Form.Control
                                                                 type="number"
                                                                 className='convert_to_lead_input_field'
-                                                                placeholder='Tele Sales HOD commission (%)'
+                                                                placeholder='(%)'
                                                                 onChange={handleTeleSalesHodCommissionChange} // Add the handler here
                                                             />
-                                                            <Form.Text className="text-muted">
+                                                            {/* <Form.Text className="text-muted">
                                                                 {Math.round(teleSalesHodCommission)}
-                                                            </Form.Text>
+                                                            </Form.Text> */}
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col xs={12} md={2}>
+                                                        <Form.Group className="mb-3" controlId="formCoordinatorCommission">
+                                                            <Form.Control
+                                                                type="number"
+                                                                className='convert_to_lead_input_field'
+                                                                placeholder='(%)'
+                                                                value={teleSalesHodCommission}
+                                                                disabled
+                                                            />
                                                         </Form.Group>
                                                     </Col>
                                                     <Col xs={12} md={3}>
@@ -908,7 +1273,7 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                                             />
                                                         </Form.Group>
                                                     </Col>
-                                                    <Col xs={12} md={3}>
+                                                    <Col xs={12} md={1}>
                                                         <Form.Group className="mb-3" controlId="formTeleSalesTeamLeaderCommission">
                                                             <Form.Control
                                                                 type="number"
@@ -916,16 +1281,27 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                                                 placeholder='Tele Sales Team Leader commission (%)'
                                                                 onChange={handleTeleSalesTeamLeaderCommissionChange} // Add the handler here
                                                             />
-                                                            <Form.Text className="text-muted">
+                                                            {/* <Form.Text className="text-muted">
                                                                 {Math.round(teleSalesTeamLeaderCommission)}
-                                                            </Form.Text>
+                                                            </Form.Text> */}
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col xs={12} md={2}>
+                                                        <Form.Group className="mb-3" controlId="formCoordinatorCommission">
+                                                            <Form.Control
+                                                                type="number"
+                                                                className='convert_to_lead_input_field'
+                                                                placeholder='(%)'
+                                                                value={teleSalesTeamLeaderCommission}
+                                                                disabled
+                                                            />
                                                         </Form.Group>
                                                     </Col>
                                                     <Col xs={12} md={3}>
                                                         <Form.Group className="mb-3" controlId="formTeleSalesHOD">
                                                             <Select
                                                                 className="custom-select"
-                                                                placeholder="Sales Agent"
+                                                                placeholder="Sales Agent (1)"
                                                                 options={userOptions}
                                                                 getOptionLabel={option => option.label}
                                                                 getOptionValue={option => option.value}
@@ -933,17 +1309,65 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                                                             />
                                                         </Form.Group>
                                                     </Col>
-                                                    <Col xs={12} md={3}>
+                                                    <Col xs={12} md={1}>
                                                         <Form.Group className="mb-3" controlId="formTeleSalesAgentCommission">
                                                             <Form.Control
                                                                 type="number"
                                                                 className='convert_to_lead_input_field'
-                                                                placeholder='Tele Sales Agent commission (%)'
+                                                                placeholder='(%)'
                                                                 onChange={handleTeleSalesAgentCommissionChange} // Add the handler here
                                                             />
-                                                            <Form.Text className="text-muted">
+                                                            {/* <Form.Text className="text-muted">
                                                                 {Math.round(teleSalesAgentCommission)}
-                                                            </Form.Text>
+                                                            </Form.Text> */}
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col xs={12} md={2}>
+                                                        <Form.Group className="mb-3" controlId="formCoordinatorCommission">
+                                                            <Form.Control
+                                                                type="number"
+                                                                className='convert_to_lead_input_field'
+                                                                placeholder='(%)'
+                                                                value={teleSalesAgentCommission}
+                                                                disabled
+                                                            />
+                                                        </Form.Group>
+                                                    </Col>
+
+                                                    <Col xs={12} md={3}>
+                                                        <Form.Group className="mb-3" controlId="formTeleSalesHOD">
+                                                            <Select
+                                                                className="custom-select"
+                                                                placeholder="Sales Agent (2)"
+                                                                options={userOptions}
+                                                                getOptionLabel={option => option.label}
+                                                                getOptionValue={option => option.value}
+                                                                onChange={handleTelesalesAgentChange}
+                                                            />
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col xs={12} md={1}>
+                                                        <Form.Group className="mb-3" controlId="formTeleSalesAgentCommission">
+                                                            <Form.Control
+                                                                type="number"
+                                                                className='convert_to_lead_input_field'
+                                                                placeholder='(%)'
+                                                                onChange={handleTeleSalesAgentCommissionChange} // Add the handler here
+                                                            />
+                                                            {/* <Form.Text className="text-muted">
+                                                                {Math.round(teleSalesAgentCommission)}
+                                                            </Form.Text> */}
+                                                        </Form.Group>
+                                                    </Col>
+                                                    <Col xs={12} md={2}>
+                                                        <Form.Group className="mb-3" controlId="formCoordinatorCommission">
+                                                            <Form.Control
+                                                                type="number"
+                                                                className='convert_to_lead_input_field'
+                                                                placeholder='(%)'
+                                                                value={teleSalesAgentCommission}
+                                                                disabled
+                                                            />
                                                         </Form.Group>
                                                     </Col>
                                                 </>
@@ -1078,8 +1502,8 @@ const ConvertLead = ({ leadId, setLeadToContract, leadtocontract }) => {
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={() => setLeadToContract(false)}>Close</Button>
-                    <Button onClick={LeadConvertHandler} >Convert</Button>
+                    <Button className='all_close_btn_container' onClick={() => setLeadToContract(false)}>Close</Button>
+                    <Button className='all_single_leads_button' onClick={LeadConvertHandler}>Create Contract</Button>
                 </Modal.Footer>
 
             </Modal>
