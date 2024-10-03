@@ -42,30 +42,30 @@ const Navbar = () => {
         setShowNotificationsModal(false);
     };
 
-    const markAsRead = async (notificationId) => {
-        try {
-            const response = await fetch(`http://192.168.2.137:2000/api/notifications/mark-as-read/${notificationId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
+    // const markAsRead = async (notificationId) => {
+    //     try {
+    //         const response = await fetch(`http://192.168.2.137:2000/api/notifications/mark-as-read/${notificationId}`, {
+    //             method: 'PUT',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             },
+    //         });
 
-            if (response.ok) {
-                setNotifications(prevNotifications =>
-                    prevNotifications.map(notification =>
-                        notification.notificationId === notificationId
-                            ? { ...notification, read: true }
-                            : notification
-                    )
-                );
-            } else {
-                console.error('Failed to mark notification as read');
-            }
-        } catch (error) {
-            console.error('Error marking notification as read:', error);
-        }
-    };
+    //         if (response.ok) {
+    //             setNotifications(prevNotifications =>
+    //                 prevNotifications.map(notification =>
+    //                     notification.notificationId === notificationId
+    //                         ? { ...notification, read: true }
+    //                         : notification
+    //                 )
+    //             );
+    //         } else {
+    //             console.error('Failed to mark notification as read');
+    //         }
+    //     } catch (error) {
+    //         console.error('Error marking notification as read:', error);
+    //     }
+    // };
 
     const logoutHandler = () => {
         localStorage.removeItem('token');
@@ -80,16 +80,16 @@ const Navbar = () => {
             <nav className='sticky-top navbar_container' style={{ backgroundColor: '#ffffff' }} >
                 <h1>CRM</h1>
                 <div>
-                    <Button onClick={handleShowNotifications} variant="primary">
+                    {/* <Button onClick={handleShowNotifications} variant="primary">
                         Notifications ({unreadNotifications.length})
-                    </Button>
+                    </Button> */}
                     <Button onClick={logoutHandler} variant="danger" style={{ marginLeft: '10px' }}>
                         Logout
                     </Button>
                 </div>
             </nav>
 
-            <Modal show={showNotificationsModal} onHide={closeNotificationsModal}>
+            {/* <Modal show={showNotificationsModal} onHide={closeNotificationsModal}>
                 <Modal.Header closeButton>
                     <Modal.Title>Notifications</Modal.Title>
                 </Modal.Header>
@@ -121,7 +121,7 @@ const Navbar = () => {
                         Close
                     </Button>
                 </Modal.Footer>
-            </Modal>
+            </Modal> */}
 
             <style jsx>{`
                 nav {
