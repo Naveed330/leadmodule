@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Navbar from '../Components/navbar/Navbar';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
-import { Button, Card, Spin, Tooltip } from 'antd';
-import { Container, Row, Col } from 'react-bootstrap';
+import { Button, Spin, Tooltip, Dropdown, Menu } from 'antd';
+import { Container, Row, Col, Image, Modal, Card, Form } from 'react-bootstrap';
 import Sidebar from '../Components/sidebar/Sidebar';
 import CreateLead from '../Components/createLead/CreateLead';
 import EditLead from '../Components/editlead/EditLead';
@@ -13,7 +13,21 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import './style.css'; // Ensure this CSS file styles your components appropriately
 import ConvertLead from '../Components/convertLead/ConvertLead';
 import { Link } from 'react-router-dom';
-import { useParams } from 'react-router-dom';
+import { BsThreeDotsVertical } from "react-icons/bs";
+import WhatsappNotification from '../Components/whatsappNotification/WhatsappNotification';
+import default_image from '../Assets/default_image.jpg'
+import { TiDeleteOutline } from "react-icons/ti";
+import { IoMdAdd } from "react-icons/io";
+import DashboardLabels from '../Components/DashboardLabels';
+import { FiEdit2 } from "react-icons/fi";
+import { LuMoveUpLeft } from "react-icons/lu";
+import { TbTransfer } from "react-icons/tb";
+import { RiContractLine } from "react-icons/ri";
+import { AiFillDelete } from "react-icons/ai";
+import { BiSolidLabel } from "react-icons/bi";
+import { IoLogoWhatsapp } from "react-icons/io";
+import { SiImessage } from "react-icons/si";
+import { TbFileDescription } from "react-icons/tb";
 
 const Leads = () => {
     // State variables
@@ -29,7 +43,22 @@ const Leads = () => {
     const [moveLeadModal, setMoveLeadModal] = useState(false);
     const [transferModal, setTransferModal] = useState(false);
     const [leadtocontract, setLeadToContract] = useState(false)
+    const [whtsappModal, setWhatsAppModal] = useState(false)
+    const [clientId, setClientId] = useState('')
     const [leadId, setLeadId] = useState(null);
+    const [messageCounts, setMessageCounts] = useState({});
+    const [rejectedLeadModal, setRejectedLeadModal] = useState(false)
+    const [contractModal, setContractModal] = useState(false)
+    const [labelsDashboardModal, setLabelsDashBoardModal] = useState(false)
+    const [openLeadDescriptionModal, setOpenLeadDescriptionModal] = useState(false)
+    const [selectedLead, setSelectedLead] = useState(null);
+    const [selectedLeadDiscussion, setSelectedDiscussion] = useState([])
+    const [leadDiscussionModal, setLeadDiscussionModal] = useState(false)
+    const [error, setError] = useState('');
+    const [discussionText, setDiscussionText] = useState('');
+    const textareaRef = useRef(null);
+
+    console.log(selectedLeadDiscussion._id, 'selectedLeadDiscussionselectedLeadDiscussion')
 
     // Redux State
     const token = useSelector(state => state.loginSlice.user?.token);
@@ -53,6 +82,18 @@ const Leads = () => {
         }
     };
 
+    // Show modal with lead details
+    const showLeadDetails = (lead) => {
+        setSelectedLead(lead); // Set the selected lead
+        setOpenLeadDescriptionModal(true)
+    };
+
+    // Show modal with lead Discussion
+    const showLeadDiscussion = (lead) => {
+        setSelectedDiscussion(lead)
+        setLeadDiscussionModal(true)
+    }
+
     // Fetch product stages based on selected product
     const fetchProductStages = async (productId) => {
         if (!productId) return;
@@ -67,7 +108,20 @@ const Leads = () => {
             console.error('Error fetching product stages:', error);
         }
     };
+    // useEffect to set default branch and product on component mount
+    useEffect(() => {
+        // Set Abu Dhabi as the default branch if available
+        const defaultBranch = branchData.find(branch => branch.name === 'Abu Dhabi');
+        if (defaultBranch) {
+            setSelectedBranch(defaultBranch._id);
+        }
 
+        // Set Business Banking as the default product if available
+        const defaultProduct = productNames.find(product => product.name === 'Business Banking');
+        if (defaultProduct) {
+            setSelectedProduct(defaultProduct._id);
+        }
+    }, [branchData, productNames]);
     // Fetch leads data
     const fetchLeadsData = async () => {
         if (!token) {
@@ -80,8 +134,18 @@ const Leads = () => {
             const { data } = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/leads/get-leads`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
+
+            // Set leads data
             setLeadsData(data.leads || []);
             setFilteredLeads(data.leads || []);
+            const messageCountMap = {};
+            // Iterate through each lead and set message counts
+            data.leads.forEach(lead => {
+                const messageCount = Array.isArray(lead.messages) ? lead.messages.length : 0;
+                messageCountMap[lead._id] = messageCount;
+            });
+            setMessageCounts(messageCountMap);
+
         } catch (error) {
             console.error('Error fetching leads:', error);
         } finally {
@@ -182,6 +246,37 @@ const Leads = () => {
         }
     };
 
+    // Add Discussion
+    const sendDiscussionMessage = async () => {
+        if (!discussionText.trim()) {
+            setError('Please Enter a Comment.');
+            return;
+        }
+
+        try {
+            await axios.post(`${process.env.REACT_APP_BASE_URL}/api/leads/add-discussion/${selectedLeadDiscussion._id}`, {
+                comment: discussionText
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setDiscussionText('');
+            fetchLeadsData();
+        } catch (error) {
+            console.log(error, 'err');
+        }
+    }
+
+    const handleInputChange = (e) => {
+        const value = e.target.value;
+        setDiscussionText(value);
+
+        if (value.trim()) {
+            setError('');
+        }
+    };
+
     // Handle drag end event
     const onDragEnd = (result) => {
         const { source, destination, draggableId } = result;
@@ -231,25 +326,93 @@ const Leads = () => {
 
     const openLeadConvertModal = (id) => {
         setLeadId(id);
-        setLeadToContract(true);
+        setContractModal(true)
     }
 
+    const openWhtsappModal = (id, clientId) => {
+        setLeadId(id);
+        setClientId(clientId)
+        setWhatsAppModal(true);
+    }
+
+    const RejectedLead = async (id) => {
+        try {
+            await axios.put(`${process.env.REACT_APP_BASE_URL}/api/leads/reject-lead/${leadId}`, {}, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            })
+            fetchLeadsData()
+            setRejectedLeadModal(false)
+        } catch (error) {
+            console.log(error, 'err')
+        }
+    }
+
+    const openRejectedLead = (id) => {
+        setLeadId(id)
+        setRejectedLeadModal(true)
+    }
+
+    const openLabelsLead = (id) => {
+        setLeadId(id)
+        setLabelsDashBoardModal(true)
+    }
+
+
+    const renderMenu = (lead) => (
+        <Menu style={{ padding: '10px 20px', inset: '0px 0px auto auto', display: 'flex', gap: '5px', flexDirection: 'column' }} >
+            <Menu.Item key="edit" onClick={() => openModal(lead._id)}>
+
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }} >
+                    <FiEdit2 style={{ color: '#95630d', fontSize: '16px' }} /> <span>Edit</span>
+                </div>
+            </Menu.Item>
+            <Menu.Item key="move" onClick={() => openMoveLeadModal(lead._id)}>
+
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }} >
+                    <LuMoveUpLeft style={{ color: '#95630d', fontSize: '16px' }} /> <span>Move</span>
+                </div>
+            </Menu.Item>
+            <Menu.Item key="transfer" onClick={() => openTransferLeadModal(lead._id)}>
+
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }} >
+                    <TbTransfer style={{ color: '#6c757d', fontSize: '16px' }} /> <span>Transfer</span>
+                </div>
+            </Menu.Item>
+            <Menu.Item key="convert" onClick={() => openLeadConvertModal(lead._id)}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }} >
+                    <RiContractLine style={{ color: '#6fd943', fontSize: '16px' }} /> <span>Contract</span>
+                </div>
+            </Menu.Item>
+            <Menu.Item key="reject" onClick={() => openRejectedLead(lead._id)}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }} >
+                    <AiFillDelete style={{ color: 'red', fontSize: '16px' }} />  <span>Reject</span>
+                </div>
+            </Menu.Item>
+            <Menu.Item key="labels" onClick={() => openLabelsLead(lead._id)}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }} >
+                    <BiSolidLabel style={{ color: '#ff3a6e', fontSize: '16px' }} />
+                    <span>
+                        Labels
+                    </span>
+                </div>
+            </Menu.Item>
+        </Menu>
+    );
     return (
         <>
             <Navbar />
             <Container fluid>
                 <Row>
-                    <Col xs={12} md={12} lg={2}>
+                    <Col xs={12} md={12} lg={1}>
                         <Sidebar />
                     </Col>
 
-                    <Col xs={12} md={12} lg={10}>
-                        {/* Header Section */}
-                        <div className='d-flex justify-content-between align-items-center mt-4'>
-                            <h1>Lead Data</h1>
-                            <Button onClick={() => setModal2Open(true)} type="primary">Create Lead</Button>
+                    <Col xs={12} md={12} lg={11}>
+                        <div className='mt-4 create_lead_icon'>
+                            <IoMdAdd style={{ fontSize: '24px' }} onClick={() => setModal2Open(true)} />
                         </div>
-
                         {/* Branch Selection Buttons */}
                         {!loginUserBranch && branchData.length > 0 && (
                             <div>
@@ -302,54 +465,243 @@ const Leads = () => {
                                             <Droppable key={stage._id} droppableId={stage._id}>
                                                 {(provided, snapshot) => (
                                                     <div
-                                                        className="stage-column mx-2"
                                                         ref={provided.innerRef}
                                                         {...provided.droppableProps}
                                                         style={{
-                                                            background: snapshot.isDraggingOver ? '#f0f0f0' : '#ffffff',
-                                                            padding: 8,
-                                                            minWidth: 250,
                                                             borderRadius: 4,
-                                                            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
                                                             maxHeight: '70vh',
                                                             overflowY: 'auto'
                                                         }}
+                                                        className="stage-column mx-2"
                                                     >
-                                                        <Card className="stage-card" bordered>
+                                                        <Card className="stage-card" bordered  >
                                                             <h5 className="text-center stage-title">{stage.name}</h5>
                                                             <div className="leads-container">
-                                                                {stagesWithLeads.find(s => s.stage._id === stage._id)?.leads.map((lead, index) => (
-                                                                    <Draggable key={lead._id} draggableId={lead._id} index={index}>
-                                                                        {(provided, snapshot) => (
-                                                                            <Card
-                                                                                ref={provided.innerRef}
-                                                                                {...provided.draggableProps}
-                                                                                {...provided.dragHandleProps}
-                                                                                size="small"
-                                                                                className="lead-card mb-2"
-                                                                                hoverable
-                                                                                onClick={() => draggableCardHandler(lead._id, stage._id)}
-                                                                                style={{
-                                                                                    userSelect: 'none',
-                                                                                    background: snapshot.isDragging ? '#e6f7ff' : '#ffffff',
-                                                                                    ...provided.draggableProps.style
-                                                                                }}
-                                                                            >
-                                                                                <div className="lead-actions mb-2" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap' }}>
-                                                                                    <Button size="small" onClick={(e) => { e.stopPropagation(); openModal(lead._id); }}>Edit</Button>
-                                                                                    <Button size="small" onClick={(e) => { e.stopPropagation(); openMoveLeadModal(lead._id); }}>Move</Button>
-                                                                                    <Button size="small" onClick={(e) => { e.stopPropagation(); openTransferLeadModal(lead._id); }}>Transfer</Button>
-                                                                                    <Button size="small" onClick={(e) => { e.stopPropagation(); openLeadConvertModal(lead._id); }}>Convert</Button>
-                                                                                </div>
+                                                                {stagesWithLeads.find(s => s.stage._id === stage._id)?.leads.map((lead, index) => {
+                                                                    console.log(lead, 'leadlead')
+                                                                    return (
+                                                                        <>
+                                                                            <Draggable key={lead._id} draggableId={lead._id} index={index}>
+                                                                                {(provided) => (
+                                                                                    <Card
+                                                                                        ref={provided.innerRef}
+                                                                                        {...provided.draggableProps}
+                                                                                        {...provided.dragHandleProps}
+                                                                                        className="lead_card mb-2"
 
-                                                                                <Link to={`/single-leads/${lead._id}`} style={{ textDecoration: 'none', color: 'black' }} >
-                                                                                    <p className='mb-1'><strong>Name:</strong> {lead.client?.name}</p>
-                                                                                </Link>
-                                                                                <p><strong>Stage:</strong> {lead.product_stage?.name}</p>
-                                                                            </Card>
-                                                                        )}
-                                                                    </Draggable>
-                                                                ))}
+                                                                                    >
+                                                                                        <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', marginTop: '-27px' }}>
+                                                                                            {lead.labels.map((labelname, index) => {
+                                                                                                let backgroundColor = '';
+                                                                                                switch (labelname.color) {
+                                                                                                    case 'success':
+                                                                                                        backgroundColor = '#6fd943';
+                                                                                                        break;
+                                                                                                    case 'danger':
+                                                                                                        backgroundColor = '#ff3a6e';
+                                                                                                        break;
+                                                                                                    case 'primary':
+                                                                                                        backgroundColor = '#5c91dc';
+                                                                                                        break;
+                                                                                                    case 'warning':
+                                                                                                        backgroundColor = '#ffa21d';
+                                                                                                        break;
+                                                                                                    case 'info':
+                                                                                                        backgroundColor = '#6ac4f4';
+                                                                                                        break;
+                                                                                                    case 'secondary':
+                                                                                                        backgroundColor = '#6c757d';
+                                                                                                        break;
+                                                                                                    default:
+                                                                                                        backgroundColor = '#ccc'; // Default color if no match
+                                                                                                }
+
+                                                                                                return (
+                                                                                                    <div key={index} style={{ marginRight: '4px', marginTop: '8px' }}>
+                                                                                                        <div
+                                                                                                            className='labels_class'
+                                                                                                            style={{
+                                                                                                                backgroundColor: backgroundColor,
+                                                                                                                borderRadius: '4px',
+                                                                                                                display: 'flex',
+                                                                                                                alignItems: 'center',
+                                                                                                                padding: '4px 8px',
+                                                                                                                cursor: 'pointer'
+                                                                                                            }}
+                                                                                                        >
+                                                                                                            <p style={{ color: '#fff', margin: 0, fontSize: '11px' }}>{labelname.name}</p>
+                                                                                                        </div>
+
+                                                                                                    </div>
+                                                                                                );
+                                                                                            })}
+                                                                                        </div>
+
+                                                                                        <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '28px' }}>
+                                                                                            <div style={{ width: '100%', maxWidth: '160px' }}>
+                                                                                                <Link to={`/single-leads/${lead._id}`} style={{ textDecoration: 'none', color: 'black' }} >
+                                                                                                    <p className='mb-1' style={{ color: '#B9406B', fontWeight: '600', fontSize: '14px' }} >{lead.company_Name ? lead.company_Name : lead.client?.name && lead.client?.name}</p>
+                                                                                                </Link>
+                                                                                            </div>
+                                                                                            <Dropdown overlay={renderMenu(lead)} trigger={['click']}>
+                                                                                                <Button icon={<BsThreeDotsVertical />} />
+                                                                                            </Dropdown>
+                                                                                        </div>
+                                                                                        <div className="image_container">
+                                                                                            {lead.selected_users
+                                                                                                .filter((leadImage) => {
+                                                                                                    const excludedRoles = [
+                                                                                                        'Developer', 'Marketing', 'CEO', 'MD',
+                                                                                                        'Super Admin', 'HOD',
+                                                                                                    ];
+
+                                                                                                    return !excludedRoles.includes(leadImage?.role);
+                                                                                                })
+                                                                                                .map((leadImage, index) => {
+                                                                                                    const imageSrc = leadImage?.image
+                                                                                                        ? `${process.env.REACT_APP_BASE_URL}/images/${leadImage?.image}`
+                                                                                                        : default_image;
+
+                                                                                                    return (
+                                                                                                        <Image
+                                                                                                            key={index}
+                                                                                                            src={imageSrc}
+                                                                                                            alt={`Lead ${index}`}
+                                                                                                            className="image_control_discussion_main_lead"
+                                                                                                        />
+                                                                                                    );
+                                                                                                })}
+
+                                                                                        </div>
+
+
+                                                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} className='mb-2'>
+                                                                                            <div className='marketing_source_lead' >
+                                                                                                <p className='mb-0 text-center' style={{ fontSize: '11px' }} > {lead.lead_type?.name && lead.lead_type?.name} </p>
+                                                                                                <p className='mb-0 text-center' style={{ fontSize: '11px' }}> {lead.source?.name && lead.source?.name} </p>
+                                                                                            </div>
+                                                                                            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end', gap: '5px' }} >
+                                                                                                <SiImessage className='mt-2' style={{ fontSize: '20px', color: '#5c91dc', cursor: 'pointer' }} onClick={() => showLeadDiscussion(lead)} />
+                                                                                                <TbFileDescription className='mt-2' style={{ fontSize: '20px', color: '#5c91dc', cursor: 'pointer' }} onClick={() => showLeadDetails(lead)} />
+                                                                                                <IoLogoWhatsapp style={{ color: 'green', fontSize: '20px', cursor: 'pointer' }} onClick={() => openWhtsappModal(lead._id, lead.client._id)} />
+                                                                                            </div>
+                                                                                        </div>
+
+                                                                                        {/* Lead Description Modal */}
+                                                                                        <Modal
+                                                                                            size="lg"
+                                                                                            aria-labelledby="contained-modal-title-vcenter"
+                                                                                            centered
+                                                                                            show={openLeadDescriptionModal}
+                                                                                            onHide={() => setOpenLeadDescriptionModal(false)}
+                                                                                        >
+                                                                                            <Modal.Header closeButton>
+                                                                                                <Modal.Title id="contained-modal-title-vcenter">
+                                                                                                    Lead Details
+                                                                                                </Modal.Title>
+                                                                                            </Modal.Header>
+                                                                                            <Modal.Body>
+                                                                                                <p>
+                                                                                                    {selectedLead && (
+                                                                                                        <div>
+                                                                                                            <p>{selectedLead.description || 'No description available.'}</p>
+                                                                                                        </div>
+                                                                                                    )}
+                                                                                                </p>
+                                                                                            </Modal.Body>
+
+                                                                                        </Modal>
+
+                                                                                        {/* Lead Discussion */}
+                                                                                        <Modal
+                                                                                            show={leadDiscussionModal}
+                                                                                            size="lg"
+                                                                                            aria-labelledby="contained-modal-title-vcenter"
+                                                                                            centered
+                                                                                            onHide={() => setLeadDiscussionModal(false)}
+                                                                                        >
+                                                                                            <Modal.Header closeButton>
+                                                                                                <Modal.Title id="contained-modal-title-vcenter">
+                                                                                                    Lead Discussion
+                                                                                                </Modal.Title>
+                                                                                            </Modal.Header>
+                                                                                            <Modal.Body>
+                                                                                                <Card className="mt-4 lead_discussion_main_card_main" style={{ padding: '15px' }}>
+                                                                                                    <Container>
+                                                                                                        <Row>
+                                                                                                            <Col xs={12}>
+                                                                                                                <div className="chat-history mb-3" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                                                                                                                    {selectedLeadDiscussion?.discussions?.length > 0 ? (
+                                                                                                                        selectedLeadDiscussion.discussions.reverse().map((leadDiscussion, index) => {
+                                                                                                                            const imageSrc = leadDiscussion.created_by?.image
+                                                                                                                                ? `${process.env.REACT_APP_BASE_URL}/images/${leadDiscussion.created_by?.image}`
+                                                                                                                                : 'default_image_url_here';
+
+                                                                                                                            return (
+                                                                                                                                <div key={index} style={{ marginBottom: '15px' }}>
+                                                                                                                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                                                                                                        <Image
+                                                                                                                                            src={imageSrc}
+                                                                                                                                            alt={leadDiscussion.created_by?.name}
+                                                                                                                                            className="image_control_discussion"
+                                                                                                                                            style={{ width: '40px', height: '40px', borderRadius: '50%' }}
+                                                                                                                                        />
+                                                                                                                                        <p className="mb-0" style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>
+                                                                                                                                            {leadDiscussion.created_by?.name}
+                                                                                                                                        </p>
+                                                                                                                                    </div>
+                                                                                                                                    <p className="mb-0" style={{ fontSize: '0.75rem', color: '#888' }}>
+                                                                                                                                        {new Date(leadDiscussion?.created_at).toLocaleDateString('en-US', {
+                                                                                                                                            year: 'numeric',
+                                                                                                                                            month: 'long',
+                                                                                                                                            day: 'numeric',
+                                                                                                                                            hour: '2-digit',
+                                                                                                                                            minute: '2-digit',
+                                                                                                                                            hour12: true,
+                                                                                                                                        })}
+                                                                                                                                    </p>
+                                                                                                                                    <p style={{ fontSize: '14px' }} className="mb-4 mt-2">
+                                                                                                                                        {leadDiscussion?.comment}
+                                                                                                                                    </p>
+                                                                                                                                </div>
+                                                                                                                            );
+                                                                                                                        })
+                                                                                                                    ) : (
+                                                                                                                        <p>No discussions available.</p>
+                                                                                                                    )}
+                                                                                                                </div>
+
+                                                                                                                <Form>
+                                                                                                                    <Form.Control
+                                                                                                                        as="textarea"
+                                                                                                                        placeholder="Leave a comment here"
+                                                                                                                        rows={1}
+                                                                                                                        value={discussionText}
+                                                                                                                        onChange={handleInputChange}
+                                                                                                                        required
+                                                                                                                        ref={textareaRef}
+                                                                                                                        maxLength={300}
+                                                                                                                        className="lead_discussion_class"
+                                                                                                                    />
+                                                                                                                    {error && <div style={{ color: 'red', marginTop: '5px' }}>{error}</div>}
+                                                                                                                </Form>
+                                                                                                                <Button onClick={sendDiscussionMessage} className="mt-2 all_single_leads_button">
+                                                                                                                    Create
+                                                                                                                </Button>
+                                                                                                            </Col>
+                                                                                                        </Row>
+                                                                                                    </Container>
+                                                                                                </Card>
+                                                                                            </Modal.Body>
+
+                                                                                        </Modal>
+
+                                                                                    </Card>
+                                                                                )}
+                                                                            </Draggable>
+                                                                        </>
+                                                                    )
+                                                                })}
                                                                 {provided.placeholder}
                                                             </div>
                                                         </Card>
@@ -365,12 +717,35 @@ const Leads = () => {
                         {/* No Stages or Products Selected */}
                         {(!selectedProduct || productStages.length === 0) && (
                             <div className="no-stages mt-4">
-                                <h5>No stages or products selected. Please select a product and/or branch.</h5>
+                                <h5>No Stages or Products Selected. Please Select a Product and Branch.</h5>
                             </div>
                         )}
                     </Col>
                 </Row>
 
+                <Modal
+                    size="sm"
+                    aria-labelledby="contained-modal-title-vcenter"
+                    centered
+                    show={rejectedLeadModal}
+                    onHide={() => setRejectedLeadModal(false)}
+                >
+                    <Modal.Header closeButton>
+                        <Modal.Title id="contained-modal-title-vcenter">
+                            Reject Lead
+                        </Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body className="text-center">
+                        <TiDeleteOutline className="text-danger" style={{ fontSize: '4rem' }} />
+                        <p  >
+                            <span style={{ color: 'red', fontWeight: '600' }} > Are You Sure?</span>  <br /> <span style={{ color: '#3ec9d6' }} >You Want to Reject this Lead</span>
+                        </p>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button className='all_close_btn_container' onClick={() => setRejectedLeadModal(false)}>Close</Button>
+                        <Button className='all_single_leads_button' onClick={RejectedLead} >Reject Lead</Button>
+                    </Modal.Footer>
+                </Modal>
                 {/* Child Components (Modals) */}
                 <CreateLead
                     setModal2Open={setModal2Open}
@@ -395,11 +770,15 @@ const Leads = () => {
                     setTransferModal={setTransferModal}
                     transferModal={transferModal}
                 />
-
-                <ConvertLead leadId={leadId} setLeadToContract={setLeadToContract} leadtocontract={leadtocontract} />
+                <ConvertLead leadId={leadId} setLeadToContract={setLeadToContract} leadtocontract={leadtocontract} contractModal={contractModal} setContractModal={setContractModal} />
+                <WhatsappNotification leadId={leadId} whtsappModal={whtsappModal} setWhatsAppModal={setWhatsAppModal} clientId={clientId} />
+                <DashboardLabels leadId={leadId} fetchLeadsData={fetchLeadsData} labelsDashboardModal={labelsDashboardModal} setLabelsDashBoardModal={setLabelsDashBoardModal} />
             </Container>
         </>
     );
 };
 
 export default Leads;
+
+
+
