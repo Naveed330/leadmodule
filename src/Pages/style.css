@@ -12,6 +12,66 @@
     position: relative;
 }
 
+.all_single_leads_button,
+.all_single_leads_button:hover,
+.all_single_leads_button:active,
+.all_single_leads_button:visited,
+.all_single_leads_button:focus,
+.all_single_leads_button:focus-visible {
+    background-color: rgb(215, 170, 71);
+    border: none;
+}
+
+.all_close_btn_container,
+.all_close_btn_container:hover,
+.all_close_btn_container:active,
+.all_close_btn_container:visited,
+.all_close_btn_container:focus,
+.all_close_btn_container:focus-visible {
+    background-color: red;
+    border: none;
+}
+.tooltip {
+    position: absolute;
+    bottom: 100%; /* Adjust as necessary */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    z-index: 1000; /* Ensure it's on top of other elements */
+    transition: opacity 0.3s; /* Optional smooth appearance */
+}
+.lead_information_data {
+    width: 100%;
+    max-width: 500px;
+    margin: auto;
+}
+
+.stage-name {
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.3s ease-in-out;
+}
+
+.step-container:hover .stage-name {
+    visibility: visible;
+    opacity: 1;
+}
+
+.all_delete_btn_container,
+.all_delete_btn_container:hover,
+.all_delete_btn_container:active,
+.all_delete_btn_container:visited,
+.all_delete_btn_container:focus,
+.all_delete_btn_container:focus-visible {
+    background-color: #ce0808;
+    border: none;
+}
+
+
 .icons_class {
     position: absolute;
     top: 20px;
@@ -36,36 +96,100 @@
     padding-bottom: 1rem;
 }
 
+.pdf_icon {
+    width: 80px;
+    height: 80px;
+    /* border-radius: 50%; */
+}
+
+.message_sender {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background-color: #146142;
+    border: none;
+    color: white;
+}
+
+.chat-history {
+    border-radius: 5px;
+}
+
+
 /* Wrapper to hold all stages in a row */
 .stages-wrapper {
     display: flex;
-    flex-wrap: nowrap;
-    gap: 1rem;
+    /* flex-wrap: nowrap;
+    gap: 1rem; */
 }
 
 /* Each stage column */
 .stage-column {
-    flex: 0 0 300px;
+    flex: 0 0 264px !important;
     /* Fixed width for each stage column */
     max-height: 80vh;
     display: flex;
     flex-direction: column;
 }
 
+.marketing_source_lead {
+    background-color: #B9406B;
+    color: white;
+    margin-top: 0.5rem;
+    width: auto;
+    max-width: 100px;
+    border-radius: 8px;
+}
+
+.product_stage_lead {
+    background-color: #023553;
+    color: white;
+    margin-top: 0.5rem;
+    width: auto;
+    max-width: 100px;
+    border-radius: 8px;
+    padding: 2px 2px;
+}
+
+.create_lead_icon {
+    background-color: greenyellow;
+    width: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+    border-radius: 50%;
+}
+
 /* Stage card styling */
 .stage-card {
-    background-color: #f0f2f5;
+    background-color: #fefefe;
     border-radius: 8px;
-    padding: 1rem;
+    padding: 12px 15px !important;
     height: 100%;
     overflow-y: auto;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 262px !important;
+}
+
+.lead_card {
+    box-shadow: 0 6px 30px rgba(182, 186, 203, 0.3);
+    margin-bottom: 24px;
+    transition: box-shadow 0.2s ease-in-out;
+    border-radius: 0 0 8px 8px;
+    padding: 8px 12px !important;
+    width: 100%;
+    max-width: 225px;
+    margin-top: 5%;
 }
 
 /* Stage title styling */
 .stage-title {
     margin-bottom: 1rem;
-    font-weight: bold;
+    font-weight: 600;
     color: #060606;
 }
 
@@ -181,6 +305,16 @@
     justify-content: center;
 }
 
+.main_lead_users_delete_btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    background: linear-gradient(141.55deg, #ff3a6e 3.46%, #ff3a6e 99.86%), #ff3a6e !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .lead_user_class {
     height: 100%;
     max-height: 500px;
@@ -195,6 +329,25 @@
 
 .lead_discussion_main_card {
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    overflow-y: scroll;
+
+}
+
+.lead_discussion_main_card_user {
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    height: auto;
+}
+
+.lead_discussion_main_card_description {
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    height: auto;
+}
+
+.lead_discussion_main_card_main {
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    overflow-y: scroll;
+    height: 100%;
+    max-height: 800px;
 }
 
 .lead_discussion_main_card_activity_log {
@@ -203,6 +356,14 @@
     overflow-y: scroll;
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
     margin-bottom: 3%;
+}
+
+.lead_discussion_class::placeholder {
+    font-size: 12px;
+    padding: 0px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .upload_btn,
@@ -216,10 +377,62 @@
 }
 
 .card_discussion {
-    height: 100%;
-    max-height: 400px;
-    overflow-y: scroll;
+    height: auto;
+    /* max-height: auto; */
+    /* overflow-y: scroll; */
     box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+    /* background: #000; */
+}
+
+.card_discussion_chat_boat {
+    height: 100%;
+    max-height: auto;
+    /* overflow-y: scroll; */
+    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+    background-color: #efe8dd;
+}
+
+.chat_text_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+.whatspp_send_message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #146142;
+    height: 35px;
+    width: 40px;
+    border-radius: 50%;
+}
+
+.details_btn_handler {
+    background-color: #B9406B;
+    height: 25px;
+    width: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+}
+
+.chat_input_field_placeholder::placeholder {
+    font-size: 12px;
+    padding: 0px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.sending_message_btn {
+    font-size: 20px;
+    color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .activity_log {
@@ -229,15 +442,22 @@
 }
 
 .image_control_discussion {
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
+    border-radius: 20%;
+}
+
+.image_control_discussion_main_lead {
+    margin-top: 8%;
+    width: 35px;
+    height: 35px;
     border-radius: 50%;
 }
 
 .image_control_discussion_files {
     width: 80px;
     height: 80px;
-    border-radius: 50%;
+    /* border-radius: 50%; */
 }
 
 .image-upload:hover {
