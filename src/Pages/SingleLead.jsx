@@ -1,68 +1,231 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Navbar from '../Components/navbar/Navbar';
-import { Container, Row, Col, Card } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Image, Modal } from 'react-bootstrap';
 import Sidebar from '../Components/sidebar/Sidebar';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { MdOutlinePhone, MdOutlineEmail } from "react-icons/md";
 import { SiEmirates } from "react-icons/si";
-import './style.css'; // Ensure this CSS file styles your components appropriately
 import LeadUsers from '../Components/LeadUsers';
 import LeadDiscussion from '../Components/LeadDiscussion';
 import ActivityLead from '../Components/ActivityLead';
-import { IoChevronForwardOutline } from "react-icons/io5";
+import FileUploader from '../Components/FileUploader';
+import EditLead from '../Components/editlead/EditLead';
+import TransferLeads from '../Components/transferLeads/TransferLeads';
+import MoveLeads from '../Components/moveLead/MoveLeads';
+import ConvertLead from '../Components/convertLead/ConvertLead';
+import { HiMiniBuildingOffice2 } from "react-icons/hi2";
+import { FaCodeBranch } from "react-icons/fa6";
+import { SiGoogleadsense } from "react-icons/si";
+import { TbSocial } from "react-icons/tb";
+import { TbWorldWww } from "react-icons/tb";
+import { TiDeleteOutline } from "react-icons/ti";
+import { FiAlertCircle } from "react-icons/fi";
+import Labels from '../Components/Labels';
+import './style.css';
+import TransferMessage from '../Components/transferMessage/TransferMessage';
 
 const SingleLead = () => {
     // User Token
     const token = useSelector(state => state.loginSlice.user?.token)
     const { id } = useParams();
     const [singleLead, setSingleLead] = useState([])
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [modalShow, setModalShow] = useState(false); // Modal state
+    const [transferModal, setTransferModal] = useState(false);
+    const [moveLeadModal, setMoveLeadModal] = useState(false)
+    const [leadtocontract, setLeadToContract] = useState(false)
+    const [rejectedLeadModal, setRejectedLeadModal] = useState(false)
+    const [contractModal, setContractModal] = useState(false)
+    const [productStages, setProductStages] = useState([]);
+    const [eidModal, setEidModal] = useState(false)
+    const [labels, setLables] = useState([])
+    const [labelModal, setLabelModal] = useState(false)
+    const [pipelineId, setPipeLineId] = useState(null);
+    const [labelName, setLabelsName] = useState([]);
+    const [previousLabels, setPreviousLabels] = useState([]);
+
+    const navigate = useNavigate()
+    const fetchSingleLead = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/leads/single-lead/${id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setSingleLead(response.data);
+            setLables(response.data.labels)
+            fetchProductStages(response.data.products?._id);  // Fetch product stages once single lead is fetched
+            setPipeLineId(response.data.pipeline_id._id)
+            setPreviousLabels(response.data.labels);
+        } catch (error) {
+            console.error('Error fetching single lead:', error);
+        }
+    };
+
+    // Fetch all labels based on the pipelineId
+    const getAllLabels = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/labels/pipeline/${pipelineId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setLabelsName(response.data); // Set labels to state
+        } catch (err) {
+            console.error(err); // Log error for debugging
+        }
+    };
+
+
+    const fetchProductStages = async (productId) => {
+        if (!productId) return;
+
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/productstages/${productId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setProductStages(response.data);
+        } catch (error) {
+            console.error('Error fetching product stages:', error);
+        }
+    };
 
     useEffect(() => {
-        const fetchSingleLead = async () => {
-            try {
-                const singleLeadResponse = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/leads/single-lead/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                setSingleLead(singleLeadResponse.data)
-            } catch (error) {
-                console.log(error, 'error')
-            }
+        if (pipelineId) {
+            getAllLabels()
         }
-        fetchSingleLead()
-    }, [token])
+    }, [pipelineId])
+
+    useEffect(() => {
+        fetchSingleLead();
+    }, [token]);
+
+    // Reject Lead API
+    const RejectedLead = async () => {
+        try {
+            await axios.put(`${process.env.REACT_APP_BASE_URL}/api/leads/reject-lead/${id}`, {}, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            })
+            navigate('/leads')
+        } catch (error) {
+            console.log(error, 'err')
+        }
+    }
+
+
+    const openRejectedLead = () => {
+        setRejectedLeadModal(true)
+    }
+
+    const openLeadConvertModal = () => {
+        if (!singleLead.client?.e_id || '') {
+            setEidModal(true)
+        } else {
+
+            setContractModal(true);
+        }
+    };
+    const openLeadContractModal = () => {
+        setLeadToContract(true)
+        setContractModal(false)
+    }
+
+    const editEmiratesIDModal = () => {
+        setModalShow(true)
+        setEidModal(false)
+    }
 
     return (
         <div>
             <Navbar />
             <Container fluid>
-                <Row  >
+                <Row >
                     <Col xs={12} md={12} lg={2}>
                         <Sidebar />
                     </Col>
                     <Col xs={12} md={12} lg={10}>
+
+                        <div className='' style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end', gap: '8px' }}>
+                            <Button className="mt-3 all_single_leads_button" onClick={() => setLabelModal(true)}>
+                                Labels
+                            </Button>
+
+                            <Button className="mt-3 all_single_leads_button" onClick={() => setModalShow(true)}>
+                                Edit
+                            </Button>
+
+                            <Button className="mt-3 all_single_leads_button" onClick={() => setMoveLeadModal(true)}>
+                                Move
+                            </Button>
+
+                            <Button className="mt-3 all_single_leads_button" onClick={() => setTransferModal(true)}>
+                                Transfer
+                            </Button>
+
+
+                            <Button className="mt-3 all_single_leads_button" onClick={() => openRejectedLead()}>
+                                Rejected
+                            </Button>
+
+                            <Button className="mt-3 all_single_leads_button" onClick={() => openLeadConvertModal()}>
+                                Contract
+                            </Button>
+
+                        </div>
+
                         <Row className='mt-4' >
-                            <Col xs={12} md={12} lg={3}>
-                                <Card body className='lead_discussion_main_card' style={{ cursor: 'pointer' }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }} >
-                                        {['Client Info', 'Service Info', 'Users | Sources', 'Discussion | Files', 'Activity'].map((text, index) => (
-                                            <div key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} className="hover-link">
-                                                <Link to={'/'} className="hover_link_services">
-                                                    {text}
-                                                </Link>
-                                                <IoChevronForwardOutline />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </Card>
-                            </Col>
                             <Col xs={12} md={12} lg={9} className='single_lead_col'>
                                 <Card body className='lead_discussion_main_card' >
+                                    {
+                                        labels?.length > 0 && (
+                                            <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
+                                                {labels.map((label, index) => {
+                                                    let backgroundColor = '';
+
+                                                    // Set the background color based on the label color
+                                                    switch (label.color) {
+                                                        case 'success':
+                                                            backgroundColor = '#6fd943';
+                                                            break;
+                                                        case 'danger':
+                                                            backgroundColor = '#ff3a6e';
+                                                            break;
+                                                        case 'primary':
+                                                            backgroundColor = '#5c91dc';
+                                                            break;
+                                                        case 'warning':
+                                                            backgroundColor = '#ffa21d';
+                                                            break;
+                                                        case 'info':
+                                                            backgroundColor = '#6ac4f4';
+                                                            break;
+                                                        case 'secondary':
+                                                            backgroundColor = '#6c757d';
+                                                            break;
+                                                        default:
+                                                            backgroundColor = '#ccc'; // Default color if no match
+                                                    }
+
+                                                    return (
+                                                        <div key={index} style={{ marginRight: '4px', marginTop: '-16px', marginBottom: '20px' }}>
+                                                            <div
+                                                                className='labels_class'
+                                                                style={{
+                                                                    backgroundColor: backgroundColor,
+                                                                    borderRadius: '4px',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    padding: '4px 8px',
+                                                                    cursor: 'pointer'
+                                                                }}
+                                                            >
+                                                                <p style={{ color: '#fff', margin: 0 }}>{label.name}</p>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )
+                                    }
                                     <h4 style={{ color: '#B9406B', textAlign: 'center' }} > {singleLead.client?.name && singleLead.client?.name} </h4>
                                     <div className='first_card' >
                                         <div className='single_lead_upper_container' >
@@ -91,7 +254,7 @@ const SingleLead = () => {
                                             </div>
                                             <div>
                                                 <p className='text-muted text-sm mb-0' >Emorate ID</p>
-                                                <h5 className='mb-0' style={{ color: '#3ec9d6', fontSize: '18px' }}> {singleLead.client?.phone && singleLead.client?.phone} </h5>
+                                                <h5 className='mb-0' style={{ color: '#3ec9d6', fontSize: '18px' }}> {singleLead.client?.e_id && singleLead.client?.e_id} </h5>
                                             </div>
                                         </div>
                                     </div>
@@ -101,9 +264,20 @@ const SingleLead = () => {
                                 <Card body className='mt-4 lead_discussion_main_card' >
                                     <h4 style={{ color: '#B9406B', textAlign: 'center' }} > {singleLead.products?.name && singleLead.products?.name} </h4>
                                     <div className='first_card' >
+
                                         <div className='single_lead_upper_container' >
                                             <div className='single_lead_icons' >
-                                                <MdOutlinePhone style={{ fontSize: '24px' }} />
+                                                <HiMiniBuildingOffice2 style={{ fontSize: '24px' }} />
+                                            </div>
+                                            <div>
+                                                <p className='text-muted text-sm mb-0' >Branch Name</p>
+                                                <h5 className='mb-0' style={{ color: '#B9406B', fontSize: '18px' }}> {singleLead.branch?.name && singleLead.branch?.name} </h5>
+                                            </div>
+                                        </div>
+
+                                        <div className='single_lead_upper_container' >
+                                            <div className='single_lead_icons' >
+                                                <FaCodeBranch style={{ fontSize: '24px' }} />
                                             </div>
                                             <div>
                                                 <p className='text-muted text-sm mb-0' >Pipeline</p>
@@ -112,8 +286,28 @@ const SingleLead = () => {
                                         </div>
 
                                         <div className='single_lead_upper_container' >
+                                            <div className='single_lead_icons_two' >
+                                                <SiGoogleadsense style={{ fontSize: '24px' }} />
+                                            </div>
+                                            <div>
+                                                <p className='text-muted text-sm mb-0' >Lead Stage</p>
+                                                <h5 className='mb-0' style={{ color: '#3ec9d6', fontSize: '18px' }}> {singleLead.product_stage?.name && singleLead.product_stage?.name} </h5>
+                                            </div>
+                                        </div>
+
+                                        <div className='single_lead_upper_container' >
+                                            <div className='single_lead_icons_two' >
+                                                <TbSocial style={{ fontSize: '24px' }} />
+                                            </div>
+                                            <div>
+                                                <p className='text-muted text-sm mb-0' >Lead From</p>
+                                                <h5 className='mb-0' style={{ color: '#3ec9d6', fontSize: '18px' }}> {singleLead.lead_type?.name && singleLead.lead_type?.name} </h5>
+                                            </div>
+                                        </div>
+
+                                        <div className='single_lead_upper_container' >
                                             <div className='single_lead_icons_one' >
-                                                <MdOutlineEmail style={{ fontSize: '24px' }} />
+                                                <TbWorldWww style={{ fontSize: '24px' }} />
                                             </div>
                                             <div>
                                                 <p className='text-muted text-sm mb-0' >Source</p>
@@ -121,30 +315,129 @@ const SingleLead = () => {
                                             </div>
                                         </div>
 
-                                        <div className='single_lead_upper_container' >
-                                            <div className='single_lead_icons_two' >
-                                                <SiEmirates style={{ fontSize: '24px' }} />
-                                            </div>
-                                            <div>
-                                                <p className='text-muted text-sm mb-0' >Lead From</p>
-                                                <h5 className='mb-0' style={{ color: '#3ec9d6', fontSize: '18px' }}> {singleLead.product_stage?.name && singleLead.product_stage?.name} </h5>
-                                            </div>
-                                        </div>
+
                                     </div>
                                 </Card>
 
-                                <LeadUsers singleLead={singleLead} />
-                                <LeadDiscussion singleLead={singleLead} id={id} />
+                                <LeadUsers singleLead={singleLead} fetchSingleLead={fetchSingleLead} />
+                                <FileUploader singleLead={singleLead} id={id} fetchSingleLead={fetchSingleLead} />
                                 <ActivityLead singleLead={singleLead} />
                             </Col>
 
-
+                            <Col xs={12} md={12} lg={3}>
+                                <div className='mb-4' >
+                                    <TransferMessage singleLead={singleLead} id={id} fetchSingleLead={fetchSingleLead}/>
+                                </div>
+                                <LeadDiscussion singleLead={singleLead} id={id} fetchSingleLead={fetchSingleLead} />
+                            </Col>
                         </Row>
                     </Col>
                 </Row>
             </Container >
+
+            <Modal
+                size="sm"
+                aria-labelledby="contained-modal-title-vcenter"
+                centered
+                show={rejectedLeadModal}
+                onHide={() => setRejectedLeadModal(false)}
+            >
+                <Modal.Header closeButton>
+                    <Modal.Title id="contained-modal-title-vcenter">
+                        Reject Lead
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="text-center">
+                    <TiDeleteOutline className="text-danger" style={{ fontSize: '4rem' }} />
+                    <p  >
+                        <span style={{ color: 'red', fontWeight: '600' }} > Are You Sure?</span>  <br /> <span style={{ color: '#3ec9d6' }} >You Want to Reject this Lead</span>
+                    </p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button className='all_close_btn_container' onClick={() => setRejectedLeadModal(false)}>Close</Button>
+                    <Button className='all_single_leads_button' onClick={RejectedLead} >Reject Lead</Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Contract Modal */}
+            <Modal
+                size="lg"
+                aria-labelledby="contained-modal-title-vcenter"
+                centered
+                show={contractModal}
+                onHide={() => setContractModal(false)}
+                style={{ zIndex: '-100px' }}
+            >
+                <Modal.Body>
+
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }} >
+                        <FiAlertCircle style={{ fontSize: '100px', color: '#ffc16a' }} />
+                    </div>
+
+                    <div className='lead_information_data mt-3' >
+                        <h4 style={{ fontSize: '1.875em', fontWeight: '600px', textAlign: 'center' }} >Alert</h4>
+                        <p style={{ fontSize: '1.125em' }}>
+                            Please check all <span style={{ color: '#ff3863' }} >Lead Information</span>  . Once a lead is converted to <span style={{ color: '#5dc9d6' }} >Service Application</span>, it can't be <span style={{ color: '#ff3863' }} >changed</span>.
+                        </p>
+                    </div>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button className='all_close_btn_container' onClick={() => setContractModal(false)}>No</Button>
+                    <Button className='all_single_leads_button' onClick={openLeadContractModal}>Yes</Button>
+                </Modal.Footer>
+            </Modal>
+
+
+            <Modal show={eidModal} onHide={() => setEidModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Need Emirates ID</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>Please provide client Emirates ID to convert lead to contract.</Modal.Body>
+                <Modal.Footer>
+                    <Button className='all_close_btn_container' onClick={() => setEidModal(false)}>
+                        Close
+                    </Button>
+                    <Button className='all_single_leads_button' onClick={() => editEmiratesIDModal()}>
+                        Edit
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* EditLead Modal */}
+            <EditLead
+                modalShow={modalShow}
+                setModalShow={setModalShow}
+                leadId={id}
+                fetchLeadsData={() => setSingleLead(singleLead)}
+                fetchSingleLead={fetchSingleLead}
+            />
+
+            <TransferLeads
+                leadId={id}
+                transferModal={transferModal}
+                setTransferModal={setTransferModal}
+                fetchLeadsData={() => setSingleLead(singleLead)}
+                fetchSingleLead={fetchSingleLead}
+            />
+
+            <MoveLeads
+                leadId={id}
+                fetchLeadsData={() => setSingleLead(singleLead)}
+                moveLeadModal={moveLeadModal}
+                setMoveLeadModal={setMoveLeadModal}
+                fetchSingleLead={fetchSingleLead}
+            />
+
+            <ConvertLead
+                leadId={id}
+                fetchLeadsData={() => setSingleLead(singleLead)}
+                leadtocontract={leadtocontract}
+                setLeadToContract={setLeadToContract}
+                fetchSingleLead={fetchSingleLead}
+            />
+
+            <Labels labelModal={labelModal} setLabelModal={setLabelModal} labelName={labelName} leadId={id} fetchSingleLead={fetchSingleLead} previousLabels={previousLabels} />
         </div >
     )
 }
-
 export default SingleLead

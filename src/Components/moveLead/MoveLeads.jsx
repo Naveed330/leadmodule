@@ -5,57 +5,106 @@ import Form from 'react-bootstrap/Form';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 
-const MoveLeads = ({ setMoveLeadModal, moveLeadModal, leadId, fetchLeadsData }) => {
+const MoveLeads = ({ setMoveLeadModal, moveLeadModal, leadId, fetchLeadsData, fetchSingleLead }) => {
     const [pipeline, setPipeline] = useState('');
     const [branch, setBranch] = useState('');
     const [selectedProduct, setSelectedProduct] = useState('');
     const [selectedProductStage, setSelectedProductStage] = useState('');
-    const [productStage, setProductStage] = useState([]);
-
-    const pipelineSlice = useSelector(state => state.loginSlice.pipelines);
+    const [pipelines, setPipelines] = useState([]);
+    const [filteredPipelines, setFilteredPipelines] = useState([]);
+    const [productStages, setProductStages] = useState([]);
+    const [initialValues, setInitialValues] = useState({ pipeline: '', branch: '', productStage: '' });
     const branchesSlice = useSelector(state => state.loginSlice.branches || []);
     const token = useSelector(state => state.loginSlice.user?.token);
+    const productPipelineMap = {
+        'Business Banking': ['Business Banking'],
+        'Personal Loan': ['EIB Bank', 'Personal Loan'],
+        'Mortgage Loan': ['Mortgage', 'CEO Mortgage'],
+    };
 
+    // Fetch pipelines on component mount
     useEffect(() => {
-        const fetchLeadData = async () => {
+        const fetchPipelines = async () => {
             try {
-                const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/leads/single-lead/${leadId}`, {
+                const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/pipelines/get-pipelines`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                const leadData = response.data;
-                setSelectedProduct(leadData.products?._id || '');
-                setSelectedProductStage('');
+                setPipelines(response.data);
             } catch (error) {
-                console.error('Error fetching lead data:', error);
+                console.error('Error fetching pipelines:', error);
             }
         };
-        fetchLeadData();
-    }, [leadId, token]);
+        fetchPipelines();
+    }, [token]);
 
+    // Fetch lead data when modal opens
     useEffect(() => {
-        const fetchProductStages = async () => {
-            if (selectedProduct) {
+        if (moveLeadModal) {
+            const fetchLeadData = async () => {
                 try {
-                    const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/productstages/${selectedProduct}`, {
+                    const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/leads/single-lead/${leadId}`, {
                         headers: {
                             Authorization: `Bearer ${token}`,
                         },
                     });
-                    setProductStage(response.data); // Update product stages based on the selected product
+                    const leadData = response.data;
+
+                    // Set initial values based on lead data
+                    const initialPipeline = leadData.pipeline_id?._id || '';
+                    const initialBranch = leadData.branch?._id || '';
+                    const initialProductStage = leadData.product_stage?._id || '';
+
+                    setInitialValues({ pipeline: initialPipeline, branch: initialBranch, productStage: initialProductStage });
+                    setSelectedProduct(leadData.products?._id || '');
+                    setBranch(initialBranch);
+                    setPipeline(initialPipeline);
+                    setSelectedProductStage(initialProductStage); // Set the product stage correctly
+
+                    // Filter pipelines based on the selected product
+                    const productName = leadData.products?.name;
+                    if (productName) {
+                        const filtered = productPipelineMap[productName] || [];
+                        setFilteredPipelines(pipelines.filter(pipeline => filtered.includes(pipeline.name)));
+                    }
+                } catch (error) {
+                    console.error('Error fetching lead data:', error);
+                }
+            };
+            fetchLeadData();
+        }
+    }, [moveLeadModal, leadId, token, pipelines]);
+
+    // Fetch product stages based on selected pipeline
+    useEffect(() => {
+        const fetchProductStages = async () => {
+            if (pipeline) {
+                try {
+                    const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/productstages/pipeline/${pipeline}`, {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    });
+                    setProductStages(response.data);
+
+                    // Reset selected product stage if it doesn't match the fetched stages
+                    const matchingStage = response.data.find(stage => stage._id === initialValues.productStage);
+                    setSelectedProductStage(matchingStage ? matchingStage._id : ''); // Set the matching product stage or reset
                 } catch (error) {
                     console.error('Error fetching product stages:', error);
                 }
             } else {
-                setProductStage([]); // Clear product stages if no product is selected
+                setProductStages([]); // Clear product stages if no pipeline is selected
+                setSelectedProductStage(''); // Reset selected product stage
             }
         };
         fetchProductStages();
-    }, [selectedProduct, token]);
+    }, [pipeline, token, initialValues.productStage]);
 
     const handlePipelineChange = (e) => {
         setPipeline(e.target.value);
+        setSelectedProductStage(''); // Reset selected stage when pipeline changes
     };
 
     const handleBranchChange = (e) => {
@@ -63,7 +112,7 @@ const MoveLeads = ({ setMoveLeadModal, moveLeadModal, leadId, fetchLeadsData }) 
     };
 
     const handleProductStageChange = (e) => {
-        setSelectedProductStage(e.target.value);
+        setSelectedProductStage(e.target.value); // Set selected product stage
     };
 
     const moveLeadsHandler = async () => {
@@ -73,7 +122,7 @@ const MoveLeads = ({ setMoveLeadModal, moveLeadModal, leadId, fetchLeadsData }) 
                 {
                     pipeline,
                     branch,
-                    product_stage: selectedProductStage
+                    product_stage: selectedProductStage,
                 },
                 {
                     headers: {
@@ -81,19 +130,28 @@ const MoveLeads = ({ setMoveLeadModal, moveLeadModal, leadId, fetchLeadsData }) 
                     },
                 }
             );
-            // Optionally, you can handle success here (e.g., close modal or show a success message)
+            fetchLeadsData();
+            fetchSingleLead();
             setMoveLeadModal(false);
-            fetchLeadsData()
         } catch (error) {
             console.error('Error moving leads:', error);
         }
+    };
+
+    const resetToInitialValues = () => {
+        setBranch(initialValues.branch);
+        setPipeline(initialValues.pipeline);
+        setSelectedProductStage(initialValues.productStage);
     };
 
     return (
         <div>
             <Modal
                 show={moveLeadModal}
-                onHide={() => setMoveLeadModal(false)}
+                onHide={() => {
+                    resetToInitialValues();
+                    setMoveLeadModal(false);
+                }}
                 size="lg"
                 aria-labelledby="contained-modal-title-vcenter"
                 centered
@@ -101,8 +159,6 @@ const MoveLeads = ({ setMoveLeadModal, moveLeadModal, leadId, fetchLeadsData }) 
                 <Modal.Body>
                     <h4>Move Leads</h4>
                     <Form>
-                        
-                        {/* Branch Selection */}
                         <Form.Label>Branch</Form.Label>
                         <Form.Select
                             aria-label="Select Branch"
@@ -118,7 +174,6 @@ const MoveLeads = ({ setMoveLeadModal, moveLeadModal, leadId, fetchLeadsData }) 
                             ))}
                         </Form.Select>
 
-                        {/* Pipeline Selection */}
                         <Form.Label>Pipeline</Form.Label>
                         <Form.Select
                             aria-label="Select Pipeline"
@@ -127,39 +182,40 @@ const MoveLeads = ({ setMoveLeadModal, moveLeadModal, leadId, fetchLeadsData }) 
                             onChange={handlePipelineChange}
                         >
                             <option value="">Select Pipeline</option>
-                            {pipelineSlice.map(pipeline => (
+                            {filteredPipelines.map(pipeline => (
                                 <option key={pipeline._id} value={pipeline._id}>
                                     {pipeline.name}
                                 </option>
                             ))}
                         </Form.Select>
 
-                        {/* Product Stage Selection */}
-                        <Form.Group className="mb-3" controlId="productStage">
-                            <Form.Label>Product Stage</Form.Label>
-                            <Form.Select
-                                aria-label="Select Product Stage"
-                                name="product_stage"
-                                value={selectedProductStage}
-                                onChange={handleProductStageChange}
-                            >
-                                <option value="">Select Product Stage</option>
-                                {productStage.map(stage => (
-                                    <option key={stage._id} value={stage._id}>
-                                        {stage.name}
-                                    </option>
-                                ))}
-                            </Form.Select>
-                        </Form.Group>
+                        <Form.Label>Product Stage</Form.Label>
+                        <Form.Select
+                            aria-label="Select Product Stage"
+                            name="productStage"
+                            value={selectedProductStage}
+                            onChange={handleProductStageChange}
+                        >
+                            <option value="" disabled={!productStages.length}>Select Product Stage</option>
+                            {productStages.map(stage => (
+                                <option key={stage._id} value={stage._id}>
+                                    {stage.name}
+                                </option>
+                            ))}
+                        </Form.Select>
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setMoveLeadModal(false)}>
+                    <Button className='all_close_btn_container' onClick={() => {
+                        resetToInitialValues();
+                        setMoveLeadModal(false);
+                    }}>
                         Close
                     </Button>
                     <Button
-                        variant="primary"
+                        className='all_single_leads_button'
                         onClick={moveLeadsHandler}
+                        disabled={!branch || !pipeline || !selectedProductStage}
                     >
                         Move Leads
                     </Button>
@@ -168,4 +224,5 @@ const MoveLeads = ({ setMoveLeadModal, moveLeadModal, leadId, fetchLeadsData }) 
         </div>
     );
 };
+
 export default MoveLeads;

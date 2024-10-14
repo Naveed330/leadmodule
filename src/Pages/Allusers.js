@@ -97,7 +97,6 @@ const Allusers = () => {
                 );
             }
         } catch (error) {
-            console.error('Error updating user:', error);
             message.error('Failed to update user');
         } finally {
             setIsUpdatingUser(null);
@@ -132,7 +131,6 @@ const Allusers = () => {
                 );
             }
         } catch (error) {
-            console.error('Error deleting user:', error);
             message.error('Failed to mark user as deleted');
         } finally {
             setIsDeleteModalVisible(false);
@@ -201,7 +199,6 @@ const Allusers = () => {
                 message.success('Password reset successfully');
             }
         } catch (error) {
-            console.error('Error resetting password:', error);
             message.error('Failed to reset password');
         } finally {
             setIsPasswordModalVisible(false);
