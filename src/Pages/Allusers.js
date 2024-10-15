@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Row, Col, Card, Dropdown, Menu, Modal, Button, Spin, Input, Form, message } from 'antd';
 import Navbar from '../Components/navbar/Navbar';
-// import Sidebar from '../Components/sidebar/Sidebar';
 import { useSelector } from 'react-redux';
 import { BsThreeDotsVertical } from "react-icons/bs";
 import Select from 'react-select';
 import './style.css';
 
 import defaultImage from '../Assets/JoveraLogoweb.png';
+import Sidebar from '../Components/sidebar/Sidebar';
 
 const Allusers = () => {
     const [users, setUsers] = useState([]);
@@ -97,7 +97,6 @@ const Allusers = () => {
                 );
             }
         } catch (error) {
-            console.error('Error updating user:', error);
             message.error('Failed to update user');
         } finally {
             setIsUpdatingUser(null);
@@ -132,7 +131,6 @@ const Allusers = () => {
                 );
             }
         } catch (error) {
-            console.error('Error deleting user:', error);
             message.error('Failed to mark user as deleted');
         } finally {
             setIsDeleteModalVisible(false);
@@ -201,7 +199,6 @@ const Allusers = () => {
                 message.success('Password reset successfully');
             }
         } catch (error) {
-            console.error('Error resetting password:', error);
             message.error('Failed to reset password');
         } finally {
             setIsPasswordModalVisible(false);
@@ -223,77 +220,75 @@ const Allusers = () => {
             <div className="all-users-container">
                 <Row>
                     <Col xs={24} sm={24} md={6} lg={4}>
-                        {/* <Sidebar /> */}
+                        <Sidebar />
                     </Col>
                     <Col xs={24} sm={24} md={18} lg={20}>
-                        <div className="cards-container" style={{ marginTop: '5%' }}>
-                            {loading ? (
-                                <div style={{ textAlign: 'center', padding: '20px' }}>
-                                    <Spin size="large" style={{ color: 'black' }} />
-                                </div>
-                            ) : (
-                                <Row>
-                                    {users.map((user) => (
-                                        <Col
-                                            xs={24}
-                                            sm={12}
-                                            md={12}
-                                            lg={12}
-                                            xxl={6}
-                                            key={user._id}
-                                            style={{ marginTop: '1%' }}
-                                        >
-                                            <Card
-                                                hoverable
-                                                style={{
-                                                    width: '90%',
-                                                    height: '100%',
-                                                    borderRadius: '8px',
-                                                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                                                    pointerEvents: isUpdatingUser === user._id ? 'none' : 'auto',
-                                                }}
-                                                cover={
-                                                    <div className="user_image_container" style={{ position: 'relative' }}>
-                                                        <img
-                                                            src={user.image ? user.image : defaultImage}
-                                                            alt="user_image"
-                                                            className="user_image"
-                                                            style={{ display: isUpdatingUser === user._id ? 'none' : 'block' }}
-                                                        />
-                                                        {isUpdatingUser === user._id && (
-                                                            <Spin
-                                                                size="large"
-                                                                style={{
-                                                                    position: 'absolute',
-                                                                    top: '50%',
-                                                                    left: '50%',
-                                                                    transform: 'translate(-50%, -50%)',
-                                                                    zIndex: 1,
-                                                                }}
-                                                            />
-                                                        )}
-                                                    </div>
-                                                }
-
-                                            >
-                                                <Dropdown overlay={menu(user)} trigger={['click']}>
-                                                    <BsThreeDotsVertical
-                                                        className="icons_class"
-                                                        style={{ cursor: 'pointer' }}
+                        {loading ? (
+                            <div style={{ textAlign: 'center', padding: '20px' }}>
+                                <Spin size="large" style={{ color: 'black' }} />
+                            </div>
+                        ) : (
+                            <Row>
+                                {users.map((user) => (
+                                    <Col
+                                        xs={24}
+                                        sm={12}
+                                        md={12}
+                                        lg={12}
+                                        xxl={6}
+                                        key={user._id}
+                                        style={{ marginTop: '1%' }}
+                                    >
+                                        <Card
+                                            hoverable
+                                            style={{
+                                                width: '90%',
+                                                height: '100%',
+                                                borderRadius: '8px',
+                                                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                                                pointerEvents: isUpdatingUser === user._id ? 'none' : 'auto',
+                                            }}
+                                            cover={
+                                                <div className="user_image_container" style={{ position: 'relative' }}>
+                                                    <img
+                                                        src={user.image ? user.image : defaultImage}
+                                                        alt="user_image"
+                                                        className="user_image"
+                                                        style={{ display: isUpdatingUser === user._id ? 'none' : 'block' }}
                                                     />
-                                                </Dropdown>
-                                                <div style={{ textAlign: 'center' }}>
-                                                    <h3>{user.name}</h3>
-                                                    <p>{user.email}</p>
-                                                    <p>{user.role}</p>
-                                                    <p>{user?.branch?.name}</p>
+                                                    {isUpdatingUser === user._id && (
+                                                        <Spin
+                                                            size="large"
+                                                            style={{
+                                                                position: 'absolute',
+                                                                top: '50%',
+                                                                left: '50%',
+                                                                transform: 'translate(-50%, -50%)',
+                                                                zIndex: 1,
+                                                            }}
+                                                        />
+                                                    )}
                                                 </div>
-                                            </Card>
-                                        </Col>
-                                    ))}
-                                </Row>
-                            )}
-                        </div>
+                                            }
+
+                                        >
+                                            <Dropdown overlay={menu(user)} trigger={['click']}>
+                                                <BsThreeDotsVertical
+                                                    className="icons_class"
+                                                    style={{ cursor: 'pointer' }}
+                                                />
+                                            </Dropdown>
+                                            <div style={{ textAlign: 'center' }}>
+                                                <h3>{user.name}</h3>
+                                                <p>{user.email}</p>
+                                                <p>{user.role}</p>
+                                                <p>{user?.branch?.name}</p>
+                                            </div>
+                                        </Card>
+                                    </Col>
+                                ))}
+                            </Row>
+                        )}
                     </Col>
                 </Row>
 
