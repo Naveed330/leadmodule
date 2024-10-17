@@ -20,8 +20,8 @@ h1 {
 }
 
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 6px;
+  width: 6px;
+  height: 10px;
 }
 
 /* Track */
@@ -39,4 +39,13 @@ h1 {
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
   background: rgb(211, 209, 209);
+}
+.clear_filter_btn{
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: red;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
