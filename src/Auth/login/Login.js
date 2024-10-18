@@ -4,17 +4,26 @@ import { useDispatch, useSelector } from 'react-redux';
 import JoveraLogoweb from '../../Assets/JoveraLogoweb.png';
 import { loginApi } from '../../Redux/loginSlice';
 import { useNavigate } from 'react-router-dom';
+
 import './Login.css';
 
 const Login = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate()
     const loading = useSelector((state) => state.loginSlice.loading);
-    const token = useSelector(state => state.loginSlice.user?.token)
+    const loginStatus = useSelector((state) => state.loginSlice.user?.status);
+
+
+    // useEffect(() => {
+    //     if (loginStatus === 200) {
+    //         navigate('/ceodashboard');
+    //     }
+    // }, [loginStatus, navigate]);
+
 
     const formHandler = (values) => {
         dispatch(loginApi(values));
-        navigate('/leads')
+        navigate('/ceodashboard');
     };
 
 

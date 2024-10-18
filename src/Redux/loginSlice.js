@@ -28,7 +28,6 @@ export const loginApi = createAsyncThunk(
             await dispatch(fetchAllProducts());
             await dispatch(fetchProductNames());
             await dispatch(fetchLeadType()); // Dispatch fetchLeadType here
-
             return response.data;
 
         } catch (error) {
